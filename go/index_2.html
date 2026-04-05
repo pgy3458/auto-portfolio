@@ -349,27 +349,27 @@
       <div class="card" style="margin-bottom:16px;">
         <div class="confirm-row">
           <label>날짜</label>
-          <input id="c-date" type="text" value="2026.04.01" />
+          <input id="c-date" type="text" value="" />
         </div>
         <div class="confirm-row">
           <label>종목명</label>
-          <input id="c-name" type="text" value="삼성전자" />
+          <input id="c-name" type="text" value="" />
         </div>
         <div class="confirm-row">
           <label>티커</label>
-          <input id="c-ticker" type="text" value="005930" />
+          <input id="c-ticker" type="text" value="" />
         </div>
         <div class="confirm-row">
           <label>수량</label>
-          <input id="c-qty" type="number" value="10" />
+          <input id="c-qty" type="number" value="" />
         </div>
         <div class="confirm-row">
           <label>단가 (원)</label>
-          <input id="c-price" type="number" value="80000" />
+          <input id="c-price" type="number" value="" />
         </div>
         <div class="confirm-row">
           <label>총금액 (원)</label>
-          <input id="c-total" type="number" value="800000" />
+          <input id="c-total" type="number" value="" />
         </div>
         <div style="padding:10px 0;">
           <label class="text-secondary" style="font-size:13px;">투자일지 메모</label>
@@ -378,7 +378,7 @@
         </div>
         <div class="confirm-row readonly">
           <label>거시경제 스냅샷</label>
-          <input id="c-macro" type="text" value="KOSPI 2,580 · USD/KRW 1,345" readonly />
+          <input id="c-macro" type="text" value="" readonly />
         </div>
       </div>
       <button id="step3-btn" class="btn btn--complete" style="width:100%;">확인 후 저장</button>
@@ -745,7 +745,7 @@
 
   // Gemini API 키
   GEMINI_API_KEY: GEMINI_API_KEY_PRIVATE,
-  GEMINI_MODEL: 'gemini-2.0-flash-lite',
+  GEMINI_MODEL: 'gemini-2.5-flash-lite',
 
   // 리밸런싱 임계값 (±5% 고정)
   REBALANCE_THRESHOLD: 0.05,
@@ -1394,7 +1394,7 @@ const Tab1 = {
 
     // 단계별 섹션 표시
     [1, 2, 3, 4].forEach(i => {
-      const el = document.getElementById(`tab1-step${i}`);
+      const el = document.getElementById(`step${i}`);
       if (el) el.style.display = i === n ? 'block' : 'none';
     });
   },
