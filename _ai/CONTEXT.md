@@ -27,6 +27,7 @@ go/app.js NLP 파서 강화: resolveDate(상대날짜→절대), validateParsed(
 
 ## 2026-04-06 완료
 go/index_2.html Step3 확인카드 더미 데이터(날짜/종목/티커/수량/단가/총액/거시경제) 제거
+go/index_2.html Step3 카드에 id="tab1-confirm-card" 추가, step3-btn → Tab1.save() 연결 (AI 파싱 결과 표시 + 포트폴리오 저장 연동)
 
 ## 2026-04-05 완료
 Code.gs (Phase 6) tlfgod 스펙 적용:
