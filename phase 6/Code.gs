@@ -23,6 +23,7 @@ function doPost(e) {
     switch (action) {
       case 'write':          result = writeTrade(payload);          break;
       case 'saveAIAnalysis': result = saveAIAnalysis(payload.data); break;
+      case 'parseNLP': result = parseNLP(payload.text); break;
       default: result = { success: false, error: 'Unknown action: ' + action };
     }
     return buildResponse(result);
@@ -521,4 +522,17 @@ function buildResponse(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function parseNLP(text) {
+  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_KEY');
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + key;
+  const prompt = '다음 거래 문장을 JSON으로만 반환. 다른 텍스트 금지.\n{"date":"YYYY-MM-DD","name":"종목명","ticker":"티커|UNKNOWN","market":"KR|US|JP","action":"매수|매도","qty":수량,"price":단가,"total":총금액,"asset":"주식|ETF|채권|현금|기타"}\n오늘날짜:' + new Date().toISOString().slice(0,10) + '\n입력:"' + text + '"';
+  const res = UrlFetchApp.fetch(url, {
+    method: 'POST',
+    contentType: 'application/json',
+    payload: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+  });
+  const data = JSON.parse(res.getContentText());
+  return data.candidates[0].content.parts[0].text;
 }
