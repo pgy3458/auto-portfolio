@@ -6,7 +6,6 @@
   <title>City Making</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-  <script src="apikey.js"></script>
   <style>
     /* ── 탭 콘텐츠 전환 ── */
     .tab-content { display: none; }
@@ -743,10 +742,6 @@
   // 배포 후 "웹 앱 URL" 붙여넣기
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx7tcosa5JRSqoqt-h22vBZb9v1caf0DXNapGV5R0ULiFV1Lht_4owDV86FbnksddAwiw/exec',
 
-  // Gemini API 키
-  GEMINI_API_KEY: GEMINI_API_KEY_PRIVATE,
-  GEMINI_MODEL: 'gemini-2.5-flash-lite',
-
   // 리밸런싱 임계값 (±5% 고정)
   REBALANCE_THRESHOLD: 0.05,
 
@@ -1418,29 +1413,19 @@ const Tab1 = {
   },
 
   async _callGemini(text) {
-    const prompt = `다음 거래 문장을 JSON으로 파싱하세요.
-출력 형식(JSON만):
-{"date":"YYYY-MM-DD","name":"종목명","ticker":"티커","qty":수량,"price":단가,"total":총금액,"type":"매수|매도","asset":"주식|ETF|채권|현금|기타"}
-
-입력: "${text}"
-오늘 날짜: ${new Date().toISOString().slice(0, 10)}
-티커 불명 시 "UNKNOWN". 숫자는 number 타입.`;
-
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_MODEL}:generateContent?key=${CONFIG.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' },
-        }),
-      }
-    );
-    if (!res.ok) throw new Error(`Gemini API 오류 ${res.status}`);
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'parseNLP',
+        text,
+        today: new Date().toISOString().slice(0, 10),
+      }),
+    });
+    if (!res.ok) throw new Error(`GAS 오류 ${res.status}`);
     const data = await res.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    return JSON.parse(raw);
+    if (!data.success) throw new Error(data.error || 'parseNLP 실패');
+    return data.parsed;
   },
 
   _renderConfirmCard(parsed) {
