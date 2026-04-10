@@ -390,7 +390,7 @@
         <p class="text-section-title" style="margin-bottom:8px;">저장 완료!</p>
         <p class="text-secondary" style="margin-bottom:24px;">거래 내역이 포트폴리오에 반영되었습니다.</p>
         <button class="btn btn--active" onclick="switchTab('tab2')">포트폴리오 보기</button>
-        <button class="btn" style="margin-top:12px;" onclick="setStep(1)">처음으로</button>
+        <button class="btn" style="margin-top:12px;" onclick="resetToStep1()">처음으로</button>
       </div>
     </div>
   </section>
@@ -838,6 +838,13 @@ function setStep(n) {
   for (let i = 1; i <= 4; i++) {
     document.getElementById('seg' + i).classList.toggle('done', i <= n);
   }
+}
+
+function resetToStep1() {
+  document.getElementById('trade-input').value = '';
+  document.getElementById('trade-btn').disabled = true;
+  document.getElementById('trade-btn').className = 'btn btn--default';
+  setStep(1);
 }
 
 // 입력창 → 버튼 활성
