@@ -534,5 +534,8 @@ function parseNLP(text) {
     payload: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
   });
   const data = JSON.parse(res.getContentText());
-  return data.candidates[0].content.parts[0].text;
+  const responseText = data.candidates[0].content.parts[0].text;
+  const clean = responseText.replace(/```json|```/g, '').trim();
+  const parsed = JSON.parse(clean);
+  return { success: true, parsed: parsed };
 }
