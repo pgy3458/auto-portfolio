@@ -40,17 +40,19 @@
 
     /* ── 탭 1: 진행바 ── */
     #tab1-progress {
-      display: flex; height: 3px;
-      background: var(--color-btn-default);
+      display: flex; height: 6px;
+      background: #D1D1D6;
       margin-bottom: 32px;
-      border-radius: 2px; overflow: hidden;
+      border-radius: 3px; overflow: hidden;
+      gap: 3px;
     }
     #tab1-progress .seg {
       flex: 1;
-      background: var(--color-btn-default);
+      background: #D1D1D6;
       transition: background 0.3s;
+      border-radius: 3px;
     }
-    #tab1-progress .seg.done { background: var(--color-accent); }
+    #tab1-progress .seg.done { background: #0071E3; }
 
     /* ── 스텝 패널 ── */
     .step-panel { display: none; }
@@ -381,6 +383,12 @@
         </div>
       </div>
       <button id="step3-btn" class="btn btn--complete" style="width:100%;">확인 후 저장</button>
+      <!-- 유효성 오류 패널 -->
+      <div id="tab1-validate-error" style="display:none;margin-top:16px;padding:16px;background:#FFF3F3;border:1px solid #FF3B30;border-radius:12px;text-align:center;">
+        <p style="color:#FF3B30;font-weight:600;margin-bottom:12px;">입력값을 확인해주세요</p>
+        <p style="color:#666;font-size:13px;margin-bottom:16px;">종목명·티커·수량·단가·총금액 중 미입력 또는 UNKNOWN 값이 있습니다.</p>
+        <button class="btn" onclick="Tab1.setStep(1);document.getElementById('tab1-validate-error').style.display='none';">다시 입력하기</button>
+      </div>
     </div>
 
     <!-- Step 4: 완료 -->
@@ -1390,9 +1398,10 @@ const Tab1 = {
 
   setStep(n) {
     this.step = n;
-    // 진행바 업데이트 (3px, 4단계)
-    const bar = document.getElementById('tab1-progress');
-    if (bar) bar.style.width = `${n === 4 ? 100 : ((n - 1) / 3) * 100}%`;
+    // 진행바: 각 seg에 done 클래스 토글
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('seg' + i)?.classList.toggle('done', i <= n);
+    }
 
     // 단계별 섹션 표시
     [1, 2, 3, 4].forEach(i => {
@@ -1485,7 +1494,7 @@ const Tab1 = {
       </div>
       <div class="confirm-row">
         <label>투자일지 메모</label>
-        <textarea id="cf-memo" placeholder="자유 입력" rows="4"></textarea>
+        <textarea id="cf-memo" placeholder="자유 입력" rows="6" style="min-height:120px;"></textarea>
       </div>
     `;
     this._loadMacroSnapshot();
@@ -1505,20 +1514,34 @@ const Tab1 = {
   },
 
   async save() {
-    const btn = document.getElementById('tab1-save-btn');
+    const btn = document.getElementById('step3-btn');
+
+    // 유효성 검사
+    const name   = document.getElementById('cf-name')?.value?.trim();
+    const ticker = document.getElementById('cf-ticker')?.value?.trim();
+    const qty    = Number(document.getElementById('cf-qty')?.value);
+    const price  = Number(document.getElementById('cf-price')?.value);
+    const total  = Number(document.getElementById('cf-total')?.value);
+    const isUnknown = v => !v || v.toUpperCase() === 'UNKNOWN';
+    if (isUnknown(name) || isUnknown(ticker) || !qty || !price || !total) {
+      const errEl = document.getElementById('tab1-validate-error');
+      if (errEl) errEl.style.display = 'block';
+      return;
+    }
+
     if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
 
     const payload = {
       action: 'write',
-      date: document.getElementById('cf-date')?.value,
-      name: document.getElementById('cf-name')?.value,
-      ticker: document.getElementById('cf-ticker')?.value,
-      qty: Number(document.getElementById('cf-qty')?.value),
-      price: Number(document.getElementById('cf-price')?.value),
-      total: Number(document.getElementById('cf-total')?.value),
-      type: document.getElementById('cf-type')?.value,
+      date:   document.getElementById('cf-date')?.value,
+      name,
+      ticker,
+      qty,
+      price,
+      total,
+      type:  document.getElementById('cf-type')?.value,
       asset: document.getElementById('cf-asset')?.value,
-      memo: document.getElementById('cf-memo')?.value || '',
+      memo:  document.getElementById('cf-memo')?.value || '',
     };
 
     try {
