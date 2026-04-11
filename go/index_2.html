@@ -390,7 +390,7 @@
         <p class="text-section-title" style="margin-bottom:8px;">저장 완료!</p>
         <p class="text-secondary" style="margin-bottom:24px;">거래 내역이 포트폴리오에 반영되었습니다.</p>
         <button class="btn btn--active" onclick="switchTab('tab2')">포트폴리오 보기</button>
-        <button class="btn" style="margin-top:12px;" onclick="resetToStep1()">처음으로</button>
+        <button class="btn" style="margin-top:12px;" onclick="Tab1.reset()">처음으로</button>
       </div>
     </div>
   </section>
@@ -1392,7 +1392,7 @@ const Tab1 = {
     this.step = n;
     // 진행바 업데이트 (3px, 4단계)
     const bar = document.getElementById('tab1-progress');
-    if (bar) bar.style.width = `${(n / 4) * 100}%`;
+    if (bar) bar.style.width = `${n === 4 ? 100 : ((n - 1) / 3) * 100}%`;
 
     // 단계별 섹션 표시
     [1, 2, 3, 4].forEach(i => {
@@ -1407,6 +1407,8 @@ const Tab1 = {
     if (!text) return;
 
     this.setStep(2);
+    const loadingEl = document.getElementById('step2');
+    if (loadingEl) loadingEl.innerHTML = '<div style="text-align:center;padding:40px;"><p>AI가 분석 중입니다...</p><div style="margin:16px auto;width:40px;height:40px;border:4px solid #E5E5EA;border-top-color:#0071E3;border-radius:50%;animation:spin 0.8s linear infinite;"></div></div>';
 
     try {
       this.parsed = await this._callGemini(text);
