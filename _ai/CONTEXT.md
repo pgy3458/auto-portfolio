@@ -49,4 +49,8 @@ go/index_2.html Step4 완료 화면에 "처음으로" 버튼 추가 → setStep(
 go/index_2.html Phase A-1,5,6: 진행바 seg.done 토글 방식 수정(height 6px), 메모 rows=6/min-height:120px, save() UNKNOWN 유효성 검사+경고 패널, step3-btn ID 오참조 수정.
 go/index_2.html step3: "다시 입력하기" 버튼을 에러 패널 밖으로 분리해 항상 노출; UNKNOWN 감지 시 경고 패널+버튼 동시 표시, btn 상태 리셋 추가.
 go/index_2.html Phase A-2,4: macro-row/loadMacroSnapshot 삭제, cf-price·cf-total type=text+콤마 포맷터, save() 콤마 제거 후 Number 변환.
+go/index_2.html: 투자일지 메모 textarea 높이 축소 (rows 6→3, min-height 72px).
+
+## 2026-04-11 완료 (2)
+go/index_2.html Phase A-3: submitInput() trade-btn 즉시 disabled(setStep 전), catch 시 버튼 복원.
 
