@@ -384,11 +384,12 @@
       </div>
       <button id="step3-btn" class="btn btn--complete" style="width:100%;">확인 후 저장</button>
       <!-- 유효성 오류 패널 -->
-      <div id="tab1-validate-error" style="display:none;margin-top:16px;padding:16px;background:#FFF3F3;border:1px solid #FF3B30;border-radius:12px;text-align:center;">
-        <p style="color:#FF3B30;font-weight:600;margin-bottom:12px;">입력값을 확인해주세요</p>
-        <p style="color:#666;font-size:13px;margin-bottom:16px;">종목명·티커·수량·단가·총금액 중 미입력 또는 UNKNOWN 값이 있습니다.</p>
-        <button class="btn" onclick="Tab1.setStep(1);document.getElementById('tab1-validate-error').style.display='none';">다시 입력하기</button>
+      <div id="tab1-validate-error" style="display:none;margin-top:16px;padding:12px 16px;background:#FFF3F3;border:1px solid #FF3B30;border-radius:12px;text-align:center;">
+        <p style="color:#FF3B30;font-weight:600;margin-bottom:6px;">입력값을 확인해주세요</p>
+        <p style="color:#666;font-size:13px;margin:0;">종목명·티커·수량·단가·총금액 중 미입력 또는 UNKNOWN 값이 있습니다.</p>
       </div>
+      <!-- 다시 입력하기 버튼 (항상 노출) -->
+      <button id="step3-back-btn" class="btn" style="width:100%;margin-top:12px;" onclick="Tab1.setStep(1);document.getElementById('tab1-validate-error').style.display='none';">다시 입력하기</button>
     </div>
 
     <!-- Step 4: 완료 -->
@@ -1526,6 +1527,7 @@ const Tab1 = {
     if (isUnknown(name) || isUnknown(ticker) || !qty || !price || !total) {
       const errEl = document.getElementById('tab1-validate-error');
       if (errEl) errEl.style.display = 'block';
+      if (btn) { btn.disabled = false; btn.textContent = '확인 후 저장'; }
       return;
     }
 
