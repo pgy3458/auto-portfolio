@@ -389,7 +389,7 @@
         <p style="color:#666;font-size:13px;margin:0;">종목명·티커·수량·단가·총금액 중 미입력 또는 UNKNOWN 값이 있습니다.</p>
       </div>
       <!-- 다시 입력하기 버튼 (항상 노출) -->
-      <button id="step3-back-btn" class="btn" style="width:100%;margin-top:12px;" onclick="Tab1.setStep(1);document.getElementById('tab1-validate-error').style.display='none';">다시 입력하기</button>
+      <button id="step3-back-btn" class="btn" style="width:100%;margin-top:12px;" onclick="(function(){var s=document.getElementById('step3-btn');if(s){s.disabled=false;s.textContent='확인 후 저장';}document.getElementById('tab1-validate-error').style.display='none';Tab1.setStep(1);})();">다시 입력하기</button>
     </div>
 
     <!-- Step 4: 완료 -->
@@ -853,6 +853,10 @@ function resetToStep1() {
   document.getElementById('trade-input').value = '';
   document.getElementById('trade-btn').disabled = true;
   document.getElementById('trade-btn').className = 'btn btn--default';
+  const saveBtn = document.getElementById('step3-btn');
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '확인 후 저장'; }
+  const errEl = document.getElementById('tab1-validate-error');
+  if (errEl) errEl.style.display = 'none';
   setStep(1);
 }
 
@@ -1554,8 +1558,12 @@ const Tab1 = {
   reset() {
     const input = document.getElementById('trade-input');
     if (input) input.value = '';
-    const btn = document.getElementById('trade-btn');
-    if (btn) btn.style.backgroundColor = '#E5E5EA';
+    const tradeBtn = document.getElementById('trade-btn');
+    if (tradeBtn) { tradeBtn.disabled = true; tradeBtn.className = 'btn btn--default'; }
+    const saveBtn = document.getElementById('step3-btn');
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '확인 후 저장'; }
+    const errEl = document.getElementById('tab1-validate-error');
+    if (errEl) errEl.style.display = 'none';
     this.parsed = null;
     this.setStep(1);
   },

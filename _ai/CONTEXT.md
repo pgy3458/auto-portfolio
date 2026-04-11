@@ -53,4 +53,5 @@ go/index_2.html: 투자일지 메모 textarea 높이 축소 (rows 6→3, min-hei
 
 ## 2026-04-11 완료 (2)
 go/index_2.html Phase A-3: submitInput() trade-btn 즉시 disabled(setStep 전), catch 시 버튼 복원.
+go/index_2.html Phase A-3 버그픽스: reset()/resetToStep1()/step3-back-btn 모두 step3-btn 초기화 추가 — "다시 입력하기" 후 재사용 시 "저장 중..." 고착 현상 해결.
 
