@@ -1468,11 +1468,11 @@ const Tab1 = {
       </div>
       <div class="confirm-row">
         <label>단가 (₩)</label>
-        <input id="cf-price" type="number" value="${parsed.price}">
+        <input id="cf-price" type="text" inputmode="numeric" value="${Number(parsed.price).toLocaleString('ko-KR')}">
       </div>
       <div class="confirm-row">
         <label>총금액 (₩)</label>
-        <input id="cf-total" type="number" value="${parsed.total}">
+        <input id="cf-total" type="text" inputmode="numeric" value="${Number(parsed.total).toLocaleString('ko-KR')}">
       </div>
       <div class="confirm-row">
         <label>구분</label>
@@ -1489,29 +1489,19 @@ const Tab1 = {
           ).join('')}
         </select>
       </div>
-      <div class="confirm-row macro-row">
-        <label>거시경제 스냅샷</label>
-        <span id="cf-macro" class="macro-text">불러오는 중...</span>
-      </div>
       <div class="confirm-row">
         <label>투자일지 메모</label>
         <textarea id="cf-memo" placeholder="자유 입력" rows="6" style="min-height:120px;"></textarea>
       </div>
     `;
-    this._loadMacroSnapshot();
-  },
-
-  async _loadMacroSnapshot() {
-    try {
-      const data = await API.get('macro');
-      const el = document.getElementById('cf-macro');
-      if (el && data) {
-        el.textContent = `KOSPI ${data.kospi} / S&P500 ${data.sp500} / USD/KRW ${data.usdkrw}`;
-      }
-    } catch {
-      const el = document.getElementById('cf-macro');
-      if (el) el.textContent = '수집 불가';
-    }
+    ['cf-price', 'cf-total'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        const raw = el.value.replace(/[^0-9]/g, '');
+        el.value = raw ? Number(raw).toLocaleString('ko-KR') : '';
+      });
+    });
   },
 
   async save() {
@@ -1521,8 +1511,8 @@ const Tab1 = {
     const name   = document.getElementById('cf-name')?.value?.trim();
     const ticker = document.getElementById('cf-ticker')?.value?.trim();
     const qty    = Number(document.getElementById('cf-qty')?.value);
-    const price  = Number(document.getElementById('cf-price')?.value);
-    const total  = Number(document.getElementById('cf-total')?.value);
+    const price  = Number((document.getElementById('cf-price')?.value || '').replace(/,/g, ''));
+    const total  = Number((document.getElementById('cf-total')?.value || '').replace(/,/g, ''));
     const isUnknown = v => !v || v.toUpperCase() === 'UNKNOWN';
     if (isUnknown(name) || isUnknown(ticker) || !qty || !price || !total) {
       const errEl = document.getElementById('tab1-validate-error');
