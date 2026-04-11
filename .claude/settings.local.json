@@ -8,7 +8,12 @@
       "Bash(GOOGLE_APPLICATION_CREDENTIALS=\"/Users/ppaggiyong/Desktop/auto_project/project-7ff16c93-2c73-41dd-a0a-6e6fa533e088.json\" python3 setup_sheets.py)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git hash-object:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git fetch:*)",
+      "Bash(ls /Users/ppaggiyong/Desktop/portfolio/*.html)",
+      "Bash(git checkout:*)"
     ]
   }
 }
