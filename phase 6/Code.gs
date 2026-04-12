@@ -163,13 +163,14 @@ function getPortfolio() {
     var avgPrice = h.qty > 0 ? Math.round(h.cost / h.qty) : 0;
     var weight   = totalKRW > 0 ? (h.cost / totalKRW) * 100 : 0;
     return {
-      name:   h.name,
-      ticker: h.ticker,
-      cur:    avgPrice,   // 현재가 미수집 → 평단가로 표시
-      avg:    avgPrice,
-      pnl:    0,
-      ret:    0,
-      wgt:    Math.round(weight * 10) / 10,
+      name:         h.name,
+      ticker:       h.ticker,
+      market:       h.market || '',
+      currentPrice: avgPrice,   // 현재가 미수집 → 평단가로 표시
+      avgPrice:     avgPrice,
+      pnl:          0,
+      returnRate:   0,
+      weight:       Math.round(weight * 10) / 10,
     };
   });
 
@@ -389,31 +390,34 @@ function getLatestRebalancing() {
 }
 
 function fetchMarketData() {
-  // PORTFOLIO 시트 셀 직접 읽기 (Yahoo Finance 불안정 대체)
-  // KOSPI:B5/C5, S&P500:B6/C6, NASDAQ:B7/C7, Nikkei:B8/C8, USD/KRW:B10/C10, JPY/KRW:B11/C11
-  try {
-    var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-    var sheet = ss.getSheetByName(SHEET_DASHBOARD);
-    if (!sheet) return buildEmptyMarket();
-
-    var read = function(cell) {
-      var v = sheet.getRange(cell).getValue();
-      return (v === '' || v === null || v === undefined) ? null : v;
-    };
-    var toStr = function(v) { return v !== null ? String(v) : '—'; };
-    var toNum = function(v) { return (v !== null && !isNaN(Number(v))) ? Number(v) : null; };
-
-    return {
-      kospi:    toStr(read('B5')),  kospiChg:   toNum(read('C5')),
-      sp500:    toStr(read('B6')),  sp500Chg:   toNum(read('C6')),
-      nasdaq:   toStr(read('B7')),  nasdaqChg:  toNum(read('C7')),
-      nikkei:   toStr(read('B8')),  nikkeiChg:  toNum(read('C8')),
-      usdkrw:   toStr(read('B10')), usdkrwChg:  toNum(read('C10')),
-      jpykrw:   toStr(read('B11')), jpykrwChg:  toNum(read('C11')),
-    };
-  } catch(e) {
-    return buildEmptyMarket();
+  // Yahoo Finance → flat 포맷 { kospi, kospiChg, ... } 반환 (_renderMarket 기대 구조)
+  var symbols = [
+    { key: 'kospi',  sym: '^KS11',    isRate: false },
+    { key: 'sp500',  sym: '^GSPC',    isRate: false },
+    { key: 'nasdaq', sym: '^IXIC',    isRate: false },
+    { key: 'nikkei', sym: '^N225',    isRate: false },
+    { key: 'usdkrw', sym: 'USDKRW=X', isRate: true  },
+    { key: 'jpykrw', sym: 'JPYKRW=X', isRate: true  },
+  ];
+  var result = {};
+  for (var i = 0; i < symbols.length; i++) {
+    var item = symbols[i];
+    try {
+      var url  = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(item.sym);
+      var res  = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      var json = JSON.parse(res.getContentText());
+      var meta = json.chart.result[0].meta;
+      var price = meta.regularMarketPrice;
+      var pct   = meta.regularMarketChangePercent;
+      var valStr = item.isRate ? price.toFixed(2) : Math.round(price).toString();
+      result[item.key]          = valStr;
+      result[item.key + 'Chg'] = (typeof pct === 'number') ? pct : null;
+    } catch (e) {
+      result[item.key]          = '—';
+      result[item.key + 'Chg'] = null;
+    }
   }
+  return result;
 }
 
 function buildEmptyMarket() {

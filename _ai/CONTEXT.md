@@ -54,7 +54,7 @@ go/index_2.html: 투자일지 메모 textarea 높이 축소 (rows 6→3, min-hei
 ## 2026-04-12 완료
 go/index_2.html Phase B-4,5,6: 보유종목 국가필터(전체/한국/미국/일본) 추가, Tab2 퀀트지표 섹션 삭제, 보유종목·거래이력 화폐기호(₩/$/¥) market 기준 적용.
 fix: Tab2 _renderHoldings/Rebalancing ID 불일치(holdings-tbody→body, rebalancing-container→rebalance-grid) 수정.
-fix: Code.gs fetchMarketData() Yahoo Finance 제거 → PORTFOLIO 시트 B/C열 직접 읽기, 반환구조 flat화(m.kospi, m.kospiChg) — _renderMarket 불일치 해소.
+fix: Code.gs fetchMarketData() Yahoo Finance 복원(flat 포맷), holdingRows 필드명 cur/avg/ret/wgt→currentPrice/avgPrice/returnRate/weight+market 추가 — _renderHoldings 필드 불일치 해소.
 go/index_2.html Phase B-4,5,6: 보유종목 국가필터(전체/한국/미국/일본) 추가, Tab2 퀀트지표 섹션 삭제, 보유종목·거래이력 화폐기호(₩/$/¥) market 기준 적용.
 
 ## 2026-04-11 완료 (2)
