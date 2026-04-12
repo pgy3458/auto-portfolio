@@ -1689,7 +1689,7 @@ const Tab2 = {
 
   _renderHoldings(holdings) {
     if (holdings) this._holdings = holdings;
-    const tbody = document.getElementById('holdings-tbody');
+    const tbody = document.getElementById('holdings-body');
     if (!tbody) return;
     const rows = this._activeMarket
       ? this._holdings.filter(h => h.market === this._activeMarket)
@@ -1732,7 +1732,7 @@ const Tab2 = {
   },
 
   _renderRebalancing(signals) {
-    const container = document.getElementById('rebalancing-container');
+    const container = document.getElementById('rebalance-grid');
     if (!container || !signals) return;
     container.innerHTML = signals.map(s => {
       const colors = { 매수: '#34C759', 매도: '#FF3B30', 유지: '#6E6E73' };
