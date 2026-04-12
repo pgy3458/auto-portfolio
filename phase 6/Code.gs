@@ -389,40 +389,42 @@ function getLatestRebalancing() {
 }
 
 function fetchMarketData() {
-  var symbols = {
-    kospi:  '^KS11',
-    sp500:  '^GSPC',
-    nasdaq: '^IXIC',
-    nikkei: '^N225',
-    usd:    'USDKRW=X',
-    jpy:    'JPYKRW=X',
-  };
-  var result = {};
-  var keys = Object.keys(symbols);
-  for (var k = 0; k < keys.length; k++) {
-    var key    = keys[k];
-    var symbol = symbols[key];
-    try {
-      var url  = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(symbol);
-      var res  = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
-      var json = JSON.parse(res.getContentText());
-      var meta = json.chart.result[0].meta;
-      var price  = meta.regularMarketPrice;
-      var change = meta.regularMarketChange;
-      var pct    = meta.regularMarketChangePercent;
-      var isRate = (key === 'usd' || key === 'jpy');
-      var isKospiNikkei = (key === 'kospi' || key === 'nikkei' || key === 'sp500' || key === 'nasdaq');
-      var valStr = isRate
-        ? price.toFixed(2)
-        : (isKospiNikkei ? Math.round(price).toString() : price.toFixed(2));
-      var chgStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      var dir    = change > 0 ? 'up' : (change < 0 ? 'down' : 'flat');
-      result[key] = { val: valStr, chg: chgStr, dir: dir };
-    } catch (e) {
-      result[key] = { val: '—', chg: '—', dir: 'flat' };
-    }
+  // PORTFOLIO 시트 셀 직접 읽기 (Yahoo Finance 불안정 대체)
+  // KOSPI:B5/C5, S&P500:B6/C6, NASDAQ:B7/C7, Nikkei:B8/C8, USD/KRW:B10/C10, JPY/KRW:B11/C11
+  try {
+    var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName(SHEET_DASHBOARD);
+    if (!sheet) return buildEmptyMarket();
+
+    var read = function(cell) {
+      var v = sheet.getRange(cell).getValue();
+      return (v === '' || v === null || v === undefined) ? null : v;
+    };
+    var toStr = function(v) { return v !== null ? String(v) : '—'; };
+    var toNum = function(v) { return (v !== null && !isNaN(Number(v))) ? Number(v) : null; };
+
+    return {
+      kospi:    toStr(read('B5')),  kospiChg:   toNum(read('C5')),
+      sp500:    toStr(read('B6')),  sp500Chg:   toNum(read('C6')),
+      nasdaq:   toStr(read('B7')),  nasdaqChg:  toNum(read('C7')),
+      nikkei:   toStr(read('B8')),  nikkeiChg:  toNum(read('C8')),
+      usdkrw:   toStr(read('B10')), usdkrwChg:  toNum(read('C10')),
+      jpykrw:   toStr(read('B11')), jpykrwChg:  toNum(read('C11')),
+    };
+  } catch(e) {
+    return buildEmptyMarket();
   }
-  return result;
+}
+
+function buildEmptyMarket() {
+  return {
+    kospi: '—', kospiChg: null,
+    sp500: '—', sp500Chg: null,
+    nasdaq: '—', nasdaqChg: null,
+    nikkei: '—', nikkeiChg: null,
+    usdkrw: '—', usdkrwChg: null,
+    jpykrw: '—', jpykrwChg: null,
+  };
 }
 
 function buildMarketData(macro) {
