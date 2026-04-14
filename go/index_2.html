@@ -919,11 +919,6 @@ async function loadTab2() {
     document.getElementById('alloc-bar-safe').style.width = d.alloc.safe + '%';
 
     renderRebalance(d.rebalance);
-
-    document.getElementById('q-sharpe').textContent  = d.quant.sharpe;
-    document.getElementById('q-sortino').textContent = d.quant.sortino;
-    document.getElementById('q-mdd').textContent     = d.quant.mdd;
-    document.getElementById('q-var').textContent     = d.quant.var;
   } catch (e) {
     console.error('getPortfolio 실패:', e);
   }
