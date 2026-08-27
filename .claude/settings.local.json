@@ -13,7 +13,9 @@
       "Bash(git ls-tree:*)",
       "Bash(git fetch:*)",
       "Bash(ls /Users/ppaggiyong/Desktop/portfolio/*.html)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git -C /Users/ppaggiyong/Desktop/portfolio log --oneline -5)",
+      "Bash(git *)"
     ]
   }
 }
