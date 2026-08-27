@@ -57,6 +57,15 @@ fix: Tab2 _renderHoldings/Rebalancing ID 불일치(holdings-tbody→body, rebala
 fix: Code.gs fetchMarketData() Yahoo Finance 복원(flat 포맷), holdingRows 필드명 cur/avg/ret/wgt→currentPrice/avgPrice/returnRate/weight+market 추가 — _renderHoldings 필드 불일치 해소.
 go/index_2.html Phase B-4,5,6: 보유종목 국가필터(전체/한국/미국/일본) 추가, Tab2 퀀트지표 섹션 삭제, 보유종목·거래이력 화폐기호(₩/$/¥) market 기준 적용.
 
+## 2026-04-15 완료
+Code.gs parseNLP(): return parsed → return { success:true, parsed } — 프론트 success 필드 불일치로 step3 미전환 버그 수정.
+
+## 2026-08-26 완료
+tab6 종목 트리맵 신설: chartjs-chart-treemap@3.1.0 CDN, 계좌→종목 2단계 구조, size=cost, color=손익률. Code.gs getHoldingsTreemap() + marketToAccount() 추가, switchTab/TABS 확장, tab6Loaded 1회 로드 가드 적용.
+
+## 2026-04-14 완료
+go/index_2.html: Tab2 getPortfolio()에서 삭제된 #q-sharpe/sortino/mdd/var DOM 참조 4줄 제거 → TypeError: null is not an object 오류 해소.
+
 ## 2026-04-11 완료 (2)
 go/index_2.html Phase A-3: submitInput() trade-btn 즉시 disabled(setStep 전), catch 시 버튼 복원.
 go/index_2.html Phase A-3 버그픽스: reset()/resetToStep1()/step3-back-btn 모두 step3-btn 초기화 추가 — "다시 입력하기" 후 재사용 시 "저장 중..." 고착 현상 해결.

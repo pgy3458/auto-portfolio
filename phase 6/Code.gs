@@ -45,7 +45,8 @@ function doGet(e) {
       case 'getPortfolio': result = getPortfolio(); break;
       case 'getTrades':    result = getHistory();   break;
       case 'getHistory':   result = getHistory();   break;
-      case 'getAIAnalysis':result = getAnalysis();  break;
+      case 'getAIAnalysis':       result = getAnalysis();          break;
+      case 'getHoldingsTreemap':  result = getHoldingsTreemap();  break;
       default: result = { success: false, error: 'Unknown action: ' + action };
     }
     return buildResponse(result);
@@ -163,14 +164,13 @@ function getPortfolio() {
     var avgPrice = h.qty > 0 ? Math.round(h.cost / h.qty) : 0;
     var weight   = totalKRW > 0 ? (h.cost / totalKRW) * 100 : 0;
     return {
-      name:         h.name,
-      ticker:       h.ticker,
-      market:       h.market || '',
-      currentPrice: avgPrice,   // 현재가 미수집 → 평단가로 표시
-      avgPrice:     avgPrice,
-      pnl:          0,
-      returnRate:   0,
-      weight:       Math.round(weight * 10) / 10,
+      name:   h.name,
+      ticker: h.ticker,
+      cur:    avgPrice,   // 현재가 미수집 → 평단가로 표시
+      avg:    avgPrice,
+      pnl:    0,
+      ret:    0,
+      wgt:    Math.round(weight * 10) / 10,
     };
   });
 
@@ -390,45 +390,40 @@ function getLatestRebalancing() {
 }
 
 function fetchMarketData() {
-  // Yahoo Finance → flat 포맷 { kospi, kospiChg, ... } 반환 (_renderMarket 기대 구조)
-  var symbols = [
-    { key: 'kospi',  sym: '^KS11',    isRate: false },
-    { key: 'sp500',  sym: '^GSPC',    isRate: false },
-    { key: 'nasdaq', sym: '^IXIC',    isRate: false },
-    { key: 'nikkei', sym: '^N225',    isRate: false },
-    { key: 'usdkrw', sym: 'USDKRW=X', isRate: true  },
-    { key: 'jpykrw', sym: 'JPYKRW=X', isRate: true  },
-  ];
+  var symbols = {
+    kospi:  '^KS11',
+    sp500:  '^GSPC',
+    nasdaq: '^IXIC',
+    nikkei: '^N225',
+    usd:    'USDKRW=X',
+    jpy:    'JPYKRW=X',
+  };
   var result = {};
-  for (var i = 0; i < symbols.length; i++) {
-    var item = symbols[i];
+  var keys = Object.keys(symbols);
+  for (var k = 0; k < keys.length; k++) {
+    var key    = keys[k];
+    var symbol = symbols[key];
     try {
-      var url  = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(item.sym);
+      var url  = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(symbol);
       var res  = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
       var json = JSON.parse(res.getContentText());
       var meta = json.chart.result[0].meta;
-      var price = meta.regularMarketPrice;
-      var pct   = meta.regularMarketChangePercent;
-      var valStr = item.isRate ? price.toFixed(2) : Math.round(price).toString();
-      result[item.key]          = valStr;
-      result[item.key + 'Chg'] = (typeof pct === 'number') ? pct : null;
+      var price  = meta.regularMarketPrice;
+      var change = meta.regularMarketChange;
+      var pct    = meta.regularMarketChangePercent;
+      var isRate = (key === 'usd' || key === 'jpy');
+      var isKospiNikkei = (key === 'kospi' || key === 'nikkei' || key === 'sp500' || key === 'nasdaq');
+      var valStr = isRate
+        ? price.toFixed(2)
+        : (isKospiNikkei ? Math.round(price).toString() : price.toFixed(2));
+      var chgStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      var dir    = change > 0 ? 'up' : (change < 0 ? 'down' : 'flat');
+      result[key] = { val: valStr, chg: chgStr, dir: dir };
     } catch (e) {
-      result[item.key]          = '—';
-      result[item.key + 'Chg'] = null;
+      result[key] = { val: '—', chg: '—', dir: 'flat' };
     }
   }
   return result;
-}
-
-function buildEmptyMarket() {
-  return {
-    kospi: '—', kospiChg: null,
-    sp500: '—', sp500Chg: null,
-    nasdaq: '—', nasdaqChg: null,
-    nikkei: '—', nikkeiChg: null,
-    usdkrw: '—', usdkrwChg: null,
-    jpykrw: '—', jpykrwChg: null,
-  };
 }
 
 function buildMarketData(macro) {
@@ -482,6 +477,63 @@ function buildMacroString(kospi, nasdaq, nikkei, usdkrw) {
   if (nasdaq) parts.push('NASDAQ '   + nasdaq);
   if (usdkrw) parts.push('USD/KRW '  + usdkrw);
   return parts.join(' · ');
+}
+
+// ── GET: getHoldingsTreemap ────────────────────────────────
+// 응답: { success, items: [{account, name, ticker, value, returnRate}] }
+function getHoldingsTreemap() {
+  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_RAW);
+  if (!sheet) return { success: false, error: 'Sheet not found' };
+
+  var rows = sheet.getDataRange().getValues();
+  if (rows.length <= 1) return { success: true, items: [] };
+
+  var holdingsMap = {};
+  for (var i = 1; i < rows.length; i++) {
+    var r      = rows[i];
+    var name   = r[1], ticker = r[2];
+    var market = r[3] || guessCountry(r[2]);
+    var type   = normalizeType(r[5]);
+    var qty    = Number(r[6]) || 0;
+    var price  = Number(r[7]) || 0;
+    if (!ticker) continue;
+    if (!holdingsMap[ticker]) {
+      holdingsMap[ticker] = { name: name, ticker: ticker, market: market, qty: 0, cost: 0 };
+    }
+    if (type === '매수') {
+      holdingsMap[ticker].qty  += qty;
+      holdingsMap[ticker].cost += qty * price;
+    } else if (type === '매도') {
+      var avg = holdingsMap[ticker].qty > 0 ? holdingsMap[ticker].cost / holdingsMap[ticker].qty : 0;
+      holdingsMap[ticker].qty  -= qty;
+      holdingsMap[ticker].cost -= qty * avg;
+      if (holdingsMap[ticker].qty <= 0) { holdingsMap[ticker].qty = 0; holdingsMap[ticker].cost = 0; }
+    }
+  }
+
+  var items = Object.values(holdingsMap)
+    .filter(function(h) { return h.qty > 0 && h.cost > 0; })
+    .map(function(h) {
+      return {
+        account:    marketToAccount(h.market),
+        name:       h.name,
+        ticker:     h.ticker,
+        value:      Math.round(h.cost),
+        returnRate: 0,   // 실시간 시세 미수집 → 임시값
+      };
+    });
+
+  return { success: true, items: items };
+}
+
+function marketToAccount(market) {
+  if (!market) return '기타';
+  var m = String(market).toUpperCase();
+  if (m === 'US' || m === '미국') return '미국주식';
+  if (m === 'KR' || m === '한국' || m === '국내') return '국내주식';
+  if (m === 'JP' || m === '일본') return '일본주식';
+  return market;
 }
 
 function guessCountry(ticker) {
