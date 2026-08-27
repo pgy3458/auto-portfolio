@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,569 +9,842 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <style>
     /* ── 탭 콘텐츠 전환 ── */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
 
     /* ── 탭 0: 비밀번호 화면 ── */
     #screen-lock {
-      position: fixed; inset: 0;
+      position: fixed;
+      inset: 0;
       background: var(--color-bg);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       z-index: 200;
     }
-    #screen-lock.hidden { display: none; }
+
+    #screen-lock.hidden {
+      display: none;
+    }
+
     .lock-box {
-      width: 100%; max-width: 360px;
+      width: 100%;
+      max-width: 360px;
       padding: 0 24px;
       text-align: center;
-      display: flex; flex-direction: column; gap: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
+
     .lock-box .service-name {
-      font-size: 34px; font-weight: 700; color: var(--color-text);
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--color-text);
       margin-bottom: 4px;
     }
+
     .lock-box .service-sub {
-      font-size: 17px; color: var(--color-secondary);
+      font-size: 17px;
+      color: var(--color-secondary);
       margin-bottom: 8px;
     }
+
     .lock-error {
-      font-size: 13px; color: var(--color-error);
+      font-size: 13px;
+      color: var(--color-error);
       min-height: 18px;
     }
 
     /* ── 탭 1: 진행바 ── */
     #tab1-progress {
-      display: flex; height: 3px;
+      display: flex;
+      height: 3px;
       background: var(--color-btn-default);
       margin-bottom: 32px;
-      border-radius: 2px; overflow: hidden;
+      border-radius: 2px;
+      overflow: hidden;
     }
+
     #tab1-progress .seg {
       flex: 1;
       background: var(--color-btn-default);
       transition: background 0.3s;
     }
-    #tab1-progress .seg.done { background: var(--color-accent); }
+
+    #tab1-progress .seg.done {
+      background: var(--color-accent);
+    }
 
     /* ── 스텝 패널 ── */
-    .step-panel { display: none; }
-    .step-panel.active { display: block; }
+    .step-panel {
+      display: none;
+    }
+
+    .step-panel.active {
+      display: block;
+    }
 
     /* ── 스피너 ── */
     .spinner {
-      width: 24px; height: 24px;
-      border: 3px solid rgba(255,255,255,0.4);
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.4);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
-      display: inline-block; vertical-align: middle; margin-right: 8px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ── 확인 카드 (Step 3) ── */
     .confirm-row {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 10px 0;
       border-bottom: 1px solid var(--color-divider);
       font-size: 15px;
     }
-    .confirm-row:last-child { border-bottom: none; }
-    .confirm-row label { color: var(--color-secondary); font-size: 13px; }
+
+    .confirm-row:last-child {
+      border-bottom: none;
+    }
+
+    .confirm-row label {
+      color: var(--color-secondary);
+      font-size: 13px;
+    }
+
     .confirm-row input {
-      border: none; outline: none; background: transparent;
-      text-align: right; font-size: 15px; color: var(--color-text);
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: right;
+      font-size: 15px;
+      color: var(--color-text);
       font-family: var(--font-family);
       border-bottom: 1px solid transparent;
     }
-    .confirm-row input:focus { border-bottom-color: var(--color-accent); }
-    .confirm-row.readonly input { color: var(--color-secondary); pointer-events: none; }
-    .confirm-memo { resize: none; width: 100%; border: none; outline: none;
-      background: transparent; font-family: var(--font-family);
-      font-size: 15px; color: var(--color-text);
-      border-bottom: 1px solid var(--color-divider); padding: 8px 0; }
+
+    .confirm-row input:focus {
+      border-bottom-color: var(--color-accent);
+    }
+
+    .confirm-row.readonly input {
+      color: var(--color-secondary);
+      pointer-events: none;
+    }
+
+    .confirm-memo {
+      resize: none;
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--font-family);
+      font-size: 15px;
+      color: var(--color-text);
+      border-bottom: 1px solid var(--color-divider);
+      padding: 8px 0;
+    }
 
     /* ── 탭 2: 차트 영역 ── */
     .chart-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: var(--card-gap);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--card-gap);
       margin-bottom: var(--card-gap);
     }
-    .chart-wrap { position: relative; height: 200px; }
+
+    .chart-wrap {
+      position: relative;
+      height: 200px;
+    }
 
     /* ── 자산 요약 카드 ── */
     .asset-summary {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: var(--card-gap); margin-bottom: var(--card-gap);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--card-gap);
+      margin-bottom: var(--card-gap);
     }
 
     /* ── 마켓 지표 ── */
     .market-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: var(--card-gap); margin-bottom: var(--card-gap);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--card-gap);
+      margin-bottom: var(--card-gap);
     }
-    .market-item { text-align: center; }
-    .market-val { font-size: 20px; font-weight: 700; }
-    .up   { color: var(--color-error); }
-    .down { color: var(--color-accent); }
-    .flat { color: var(--color-secondary); }
+
+    .market-item {
+      text-align: center;
+    }
+
+    .market-val {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .up {
+      color: var(--color-error);
+    }
+
+    .down {
+      color: var(--color-accent);
+    }
+
+    .flat {
+      color: var(--color-secondary);
+    }
 
     /* ── 리밸런싱 신호 카드 ── */
     .rebalance-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--card-gap);
     }
-    .signal-buy  { border-left: 4px solid var(--color-success); }
-    .signal-sell { border-left: 4px solid var(--color-error); }
-    .signal-hold { border-left: 4px solid var(--color-secondary); }
+
+    .signal-buy {
+      border-left: 4px solid var(--color-success);
+    }
+
+    .signal-sell {
+      border-left: 4px solid var(--color-error);
+    }
+
+    .signal-hold {
+      border-left: 4px solid var(--color-secondary);
+    }
 
     /* ── 퀀트 카드 4개 ── */
     .quant-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: var(--card-gap);
     }
-    .quant-card { text-align: center; }
-    .quant-val { font-size: 22px; font-weight: 700; }
+
+    .quant-card {
+      text-align: center;
+    }
+
+    .quant-val {
+      font-size: 22px;
+      font-weight: 700;
+    }
 
     /* ── 자산 배분 바 ── */
     .alloc-bar-wrap {
-      height: 20px; border-radius: 10px; overflow: hidden;
-      background: var(--color-btn-default); display: flex;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--color-btn-default);
+      display: flex;
     }
-    .alloc-bar-risk { background: var(--color-error); transition: width 0.5s; }
-    .alloc-bar-safe { background: var(--color-success); transition: width 0.5s; }
+
+    .alloc-bar-risk {
+      background: var(--color-error);
+      transition: width 0.5s;
+    }
+
+    .alloc-bar-safe {
+      background: var(--color-success);
+      transition: width 0.5s;
+    }
 
     /* ── 탭 3: 필터 바 ── */
     .filter-bar {
-      display: flex; gap: 10px; align-items: center;
-      flex-wrap: wrap; margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
-    .filter-bar input, .filter-bar select {
+
+    .filter-bar input,
+    .filter-bar select {
       border: 1px solid var(--color-divider);
-      border-radius: 8px; padding: 7px 12px;
-      font-size: 13px; background: var(--color-card);
-      color: var(--color-text); font-family: var(--font-family);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 13px;
+      background: var(--color-card);
+      color: var(--color-text);
+      font-family: var(--font-family);
       outline: none;
     }
-    .filter-bar input:focus, .filter-bar select:focus {
+
+    .filter-bar input:focus,
+    .filter-bar select:focus {
       border-color: var(--color-accent);
     }
+
     .toggle-btn {
-      padding: 7px 14px; border: 1px solid var(--color-divider);
-      border-radius: 8px; font-size: 13px; font-weight: 600;
-      cursor: pointer; background: var(--color-card);
-      color: var(--color-secondary); font-family: var(--font-family);
+      padding: 7px 14px;
+      border: 1px solid var(--color-divider);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--color-card);
+      color: var(--color-secondary);
+      font-family: var(--font-family);
     }
-    .toggle-btn.active-buy  { background: var(--color-success); color: #fff; border-color: var(--color-success); }
-    .toggle-btn.active-sell { background: var(--color-error);   color: #fff; border-color: var(--color-error); }
+
+    .toggle-btn.active-buy {
+      background: var(--color-success);
+      color: #fff;
+      border-color: var(--color-success);
+    }
+
+    .toggle-btn.active-sell {
+      background: var(--color-error);
+      color: #fff;
+      border-color: var(--color-error);
+    }
 
     /* ── 드로어 ── */
     .drawer {
-      position: fixed; bottom: 0; left: 0; right: 0;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
       background: var(--color-card);
       border-radius: 16px 16px 0 0;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
-      padding: 20px; z-index: 150;
-      transform: translateY(100%); transition: transform 0.3s ease;
-      max-height: 60vh; overflow-y: auto;
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+      padding: 20px;
+      z-index: 150;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      max-height: 60vh;
+      overflow-y: auto;
     }
-    .drawer.open { transform: translateY(0); }
+
+    .drawer.open {
+      transform: translateY(0);
+    }
+
     .drawer-handle {
-      width: 40px; height: 4px; border-radius: 2px;
-      background: var(--color-divider); margin: 0 auto 16px;
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--color-divider);
+      margin: 0 auto 16px;
     }
+
     .drawer-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-      z-index: 140; display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 140;
+      display: none;
     }
-    .drawer-overlay.open { display: block; }
+
+    .drawer-overlay.open {
+      display: block;
+    }
 
     /* ── 오류 행 ── */
-    tr.row-error { background: #FFF5F5; }
+    tr.row-error {
+      background: #FFF5F5;
+    }
 
     /* ── 탭 4: 행동경제학 카드 ── */
     .behavior-cards {
-      display: grid; grid-template-columns: repeat(3, 1fr);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--card-gap);
     }
-    .bcard-none    { border-top: 3px solid var(--color-secondary); }
-    .bcard-caution { border-top: 3px solid var(--color-warning); }
-    .bcard-warning { border-top: 3px solid var(--color-error); }
+
+    .bcard-none {
+      border-top: 3px solid var(--color-secondary);
+    }
+
+    .bcard-caution {
+      border-top: 3px solid var(--color-warning);
+    }
+
+    .bcard-warning {
+      border-top: 3px solid var(--color-error);
+    }
 
     /* ── AI 분석 카드 3개 ── */
     .ai-cards {
-      display: grid; grid-template-columns: repeat(3, 1fr);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--card-gap);
     }
 
     /* ── 탭 5: 오류 배지 ── */
     .tab-badge {
-      background: var(--color-error); color: #fff;
-      border-radius: 999px; font-size: 10px; font-weight: 700;
-      padding: 1px 5px; margin-left: 4px;
+      background: var(--color-error);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      margin-left: 4px;
       display: none;
     }
-    .tab-badge.visible { display: inline-block; }
+
+    .tab-badge.visible {
+      display: inline-block;
+    }
 
     /* ── 오류 유형 색상 ── */
-    .err-ai      { color: var(--color-warning); }
-    .err-api     { color: var(--color-warning); }
-    .err-sheets  { color: var(--color-error); }
-    .err-auth    { color: var(--color-secondary); }
+    .err-ai {
+      color: var(--color-warning);
+    }
+
+    .err-api {
+      color: var(--color-warning);
+    }
+
+    .err-sheets {
+      color: var(--color-error);
+    }
+
+    .err-auth {
+      color: var(--color-secondary);
+    }
 
     /* ── 오류 없음 상태 ── */
     .no-error {
-      text-align: center; padding: 60px 0;
+      text-align: center;
+      padding: 60px 0;
       color: var(--color-success);
     }
-    .no-error .material-icons { font-size: 48px; display: block; margin-bottom: 12px; }
+
+    .no-error .material-icons {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
 
     /* ── 새로고침 버튼 ── */
     .refresh-btn {
-      background: none; border: 1px solid var(--color-divider);
-      border-radius: 8px; padding: 6px 12px; cursor: pointer;
-      font-size: 13px; font-family: var(--font-family);
-      color: var(--color-secondary); display: flex; align-items: center; gap: 4px;
+      background: none;
+      border: 1px solid var(--color-divider);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: var(--font-family);
+      color: var(--color-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
-    .refresh-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+    .refresh-btn:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
 
     /* ── 성공 화면 (Step 4) ── */
-    .success-box { text-align: center; padding: 60px 0; }
-    .success-box .material-icons { font-size: 64px; color: var(--color-success); display: block; margin-bottom: 16px; }
+    .success-box {
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .success-box .material-icons {
+      font-size: 64px;
+      color: var(--color-success);
+      display: block;
+      margin-bottom: 16px;
+    }
 
     /* ── 오류 배너 ── */
     .error-banner {
-      background: #FFF5F5; border: 1px solid var(--color-error);
-      border-radius: 8px; padding: 12px 16px;
-      color: var(--color-error); font-size: 13px;
-      display: none; margin-bottom: 16px;
+      background: #FFF5F5;
+      border: 1px solid var(--color-error);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--color-error);
+      font-size: 13px;
+      display: none;
+      margin-bottom: 16px;
     }
-    .error-banner.visible { display: block; }
+
+    .error-banner.visible {
+      display: block;
+    }
 
     /* ── 탭 6: 트리맵 ── */
-    .treemap-wrap { position: relative; height: 480px; }
-    #tab6-empty {
-      text-align: center; padding: 60px 0;
-      color: var(--color-secondary); display: none;
+    .treemap-wrap {
+      position: relative;
+      height: 480px;
     }
-    #tab6-empty .material-icons { font-size: 48px; display: block; margin-bottom: 12px; }
+
+    #tab6-empty {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--color-secondary);
+      display: none;
+    }
+
+    #tab6-empty .material-icons {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
 
     /* ── 모바일 대응 ── */
     @media (max-width: 768px) {
-      .chart-row        { grid-template-columns: 1fr; }
-      .asset-summary    { grid-template-columns: 1fr; }
-      .market-grid      { grid-template-columns: repeat(2, 1fr); }
-      .rebalance-grid   { grid-template-columns: 1fr; }
-      .quant-grid       { grid-template-columns: repeat(2, 1fr); }
-      .behavior-cards   { grid-template-columns: 1fr; }
-      .ai-cards         { grid-template-columns: 1fr; }
-      .treemap-wrap     { height: 320px; }
+      .chart-row {
+        grid-template-columns: 1fr;
+      }
+
+      .asset-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .market-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .rebalance-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quant-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .behavior-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .ai-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .treemap-wrap {
+        height: 320px;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<!-- =========================================
+  <!-- =========================================
      탭 0 — 비밀번호 화면
      ========================================= -->
-<div id="screen-lock">
-  <div class="lock-box">
-    <div>
-      <div class="service-name">City Making</div>
-      <div class="service-sub">자산 관리 시스템</div>
-    </div>
-    <input id="pw-input" class="input" type="password" placeholder="비밀번호 입력"
+  <div id="screen-lock">
+    <div class="lock-box">
+      <div>
+        <div class="service-name">City Making</div>
+        <div class="service-sub">자산 관리 시스템</div>
+      </div>
+      <input id="pw-input" class="input" type="password" placeholder="비밀번호 입력"
            autocomplete="current-password" />
-    <button id="pw-btn" class="btn btn--default" style="width:100%;">확인</button>
-    <div id="pw-error" class="lock-error"></div>
+      <button id="pw-btn" class="btn btn--default" style="width:100%;">확인</button>
+      <div id="pw-error" class="lock-error"></div>
+    </div>
   </div>
-</div>
 
-<!-- =========================================
+  <!-- =========================================
      탭바 (인증 후 노출)
      ========================================= -->
-<nav class="tabbar" id="tabbar" style="display:none;">
-  <div class="tabbar__inner">
-    <a class="tab-item" data-tab="tab1">
-      <span class="material-icons">add_circle_outline</span>
-      <span>거래 입력</span>
-    </a>
-    <a class="tab-item active" data-tab="tab2">
-      <span class="material-icons">pie_chart</span>
-      <span>포트폴리오</span>
-    </a>
-    <a class="tab-item" data-tab="tab3">
-      <span class="material-icons">receipt_long</span>
-      <span>거래 이력</span>
-    </a>
-    <a class="tab-item" data-tab="tab4">
-      <span class="material-icons">psychology</span>
-      <span>AI 분석</span>
-    </a>
-    <a class="tab-item" data-tab="tab5">
-      <span class="material-icons">error_outline</span>
-      <span>오류<span id="error-badge" class="tab-badge">0</span></span>
-    </a>
-    <a class="tab-item" data-tab="tab6">
-      <span class="material-icons">grid_view</span>
-      <span>트리맵</span>
-    </a>
-  </div>
-</nav>
+  <nav class="tabbar" id="tabbar" style="display:none;">
+    <div class="tabbar__inner">
+      <a class="tab-item" data-tab="tab1">
+        <span class="material-icons">add_circle_outline</span>
+        <span>거래 입력</span>
+      </a>
+      <a class="tab-item active" data-tab="tab2">
+        <span class="material-icons">pie_chart</span>
+        <span>포트폴리오</span>
+      </a>
+      <a class="tab-item" data-tab="tab3">
+        <span class="material-icons">receipt_long</span>
+        <span>거래 이력</span>
+      </a>
+      <a class="tab-item" data-tab="tab4">
+        <span class="material-icons">psychology</span>
+        <span>AI 분석</span>
+      </a>
+      <a class="tab-item" data-tab="tab5">
+        <span class="material-icons">error_outline</span>
+        <span>오류<span id="error-badge" class="tab-badge">0</span></span>
+      </a>
+      <a class="tab-item" data-tab="tab6">
+        <span class="material-icons">grid_view</span>
+        <span>트리맵</span>
+      </a>
+    </div>
+  </nav>
 
-<!-- =========================================
+  <!-- =========================================
      메인 콘텐츠
      ========================================= -->
-<main class="container" id="main-content" style="padding-top:24px; display:none;">
+  <main class="container" id="main-content" style="padding-top:24px; display:none;">
 
-  <!-- ── 탭 1: 거래 입력 ── -->
-  <section class="tab-content" id="tab1">
-    <!-- 진행바 4단계 -->
-    <div id="tab1-progress">
-      <div class="seg done" id="seg1"></div>
-      <div class="seg"      id="seg2"></div>
-      <div class="seg"      id="seg3"></div>
-      <div class="seg"      id="seg4"></div>
-    </div>
+    <!-- ── 탭 1: 거래 입력 ── -->
+    <section class="tab-content" id="tab1">
+      <!-- 진행바 4단계 -->
+      <div id="tab1-progress">
+        <div class="seg done" id="seg1"></div>
+        <div class="seg" id="seg2"></div>
+        <div class="seg" id="seg3"></div>
+        <div class="seg" id="seg4"></div>
+      </div>
 
-    <div id="error-banner-tab1" class="error-banner"></div>
+      <div id="error-banner-tab1" class="error-banner"></div>
 
-    <!-- Step 1: 입력 -->
-    <div class="step-panel active" id="step1">
-      <h2 class="text-section-title" style="margin-bottom:24px;">거래 내용을 입력하세요</h2>
-      <div class="card">
-        <input id="trade-input" class="input"
+      <!-- Step 1: 입력 -->
+      <div class="step-panel active" id="step1">
+        <h2 class="text-section-title" style="margin-bottom:24px;">거래 내용을 입력하세요</h2>
+        <div class="card">
+          <input id="trade-input" class="input"
                placeholder="오늘 삼성전자 10주 8만원에 매수했어"
                style="font-size:17px;" />
-        <div style="margin-top:20px;">
-          <button id="trade-btn" class="btn btn--default" style="width:100%;"
+          <div style="margin-top:20px;">
+            <button id="trade-btn" class="btn btn--default" style="width:100%;"
                   disabled>AI 해석하기</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Step 2: AI 해석 중 -->
-    <div class="step-panel" id="step2">
-      <div class="card" style="text-align:center; padding:48px 20px;">
-        <p class="text-section-title" style="margin-bottom:16px;">AI 해석 중…</p>
-        <p class="text-secondary">Gemini가 거래 내용을 분석하고 있습니다</p>
+      <!-- Step 2: AI 해석 중 -->
+      <div class="step-panel" id="step2">
+        <div class="card" style="text-align:center; padding:48px 20px;">
+          <p class="text-section-title" style="margin-bottom:16px;">AI 해석 중…</p>
+          <p class="text-secondary">Gemini가 거래 내용을 분석하고 있습니다</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Step 3: 확인 카드 -->
-    <div class="step-panel" id="step3">
-      <h2 class="text-section-title" style="margin-bottom:16px;">내용을 확인하세요</h2>
-      <div id="tab1-confirm-card" class="card" style="margin-bottom:16px;">
-        <div class="confirm-row">
-          <label>날짜</label>
-          <input id="c-date" type="text" value="" />
-        </div>
-        <div class="confirm-row">
-          <label>종목명</label>
-          <input id="c-name" type="text" value="" />
-        </div>
-        <div class="confirm-row">
-          <label>티커</label>
-          <input id="c-ticker" type="text" value="" />
-        </div>
-        <div class="confirm-row">
-          <label>수량</label>
-          <input id="c-qty" type="number" value="" />
-        </div>
-        <div class="confirm-row">
-          <label>단가 (원)</label>
-          <input id="c-price" type="number" value="" />
-        </div>
-        <div class="confirm-row">
-          <label>총금액 (원)</label>
-          <input id="c-total" type="number" value="" />
-        </div>
-        <div style="padding:10px 0;">
-          <label class="text-secondary" style="font-size:13px;">투자일지 메모</label>
-          <textarea id="c-memo" class="confirm-memo" rows="3"
+      <!-- Step 3: 확인 카드 -->
+      <div class="step-panel" id="step3">
+        <h2 class="text-section-title" style="margin-bottom:16px;">내용을 확인하세요</h2>
+        <div id="tab1-confirm-card" class="card" style="margin-bottom:16px;">
+          <div class="confirm-row">
+            <label>날짜</label>
+            <input id="c-date" type="text" value="" />
+          </div>
+          <div class="confirm-row">
+            <label>종목명</label>
+            <input id="c-name" type="text" value="" />
+          </div>
+          <div class="confirm-row">
+            <label>티커</label>
+            <input id="c-ticker" type="text" value="" />
+          </div>
+          <div class="confirm-row">
+            <label>수량</label>
+            <input id="c-qty" type="number" value="" />
+          </div>
+          <div class="confirm-row">
+            <label>단가 (원)</label>
+            <input id="c-price" type="number" value="" />
+          </div>
+          <div class="confirm-row">
+            <label>총금액 (원)</label>
+            <input id="c-total" type="number" value="" />
+          </div>
+          <div style="padding:10px 0;">
+            <label class="text-secondary" style="font-size:13px;">투자일지 메모</label>
+            <textarea id="c-memo" class="confirm-memo" rows="3"
                     placeholder="메모를 입력하세요…"></textarea>
+          </div>
+          <div class="confirm-row readonly">
+            <label>거시경제 스냅샷</label>
+            <input id="c-macro" type="text" value="" readonly />
+          </div>
         </div>
-        <div class="confirm-row readonly">
-          <label>거시경제 스냅샷</label>
-          <input id="c-macro" type="text" value="" readonly />
+        <button id="step3-btn" class="btn btn--complete" style="width:100%;">확인 후 저장</button>
+      </div>
+
+      <!-- Step 4: 완료 -->
+      <div class="step-panel" id="step4">
+        <div class="card success-box">
+          <span class="material-icons">check_circle</span>
+          <p class="text-section-title" style="margin-bottom:8px;">저장 완료!</p>
+          <p class="text-secondary" style="margin-bottom:24px;">거래 내역이 포트폴리오에 반영되었습니다.</p>
+          <button class="btn btn--active" onclick="switchTab('tab2')">포트폴리오 보기</button>
+          <button class="btn" style="margin-top:12px;" onclick="resetToStep1()">처음으로</button>
         </div>
       </div>
-      <button id="step3-btn" class="btn btn--complete" style="width:100%;">확인 후 저장</button>
-    </div>
+    </section>
 
-    <!-- Step 4: 완료 -->
-    <div class="step-panel" id="step4">
-      <div class="card success-box">
-        <span class="material-icons">check_circle</span>
-        <p class="text-section-title" style="margin-bottom:8px;">저장 완료!</p>
-        <p class="text-secondary" style="margin-bottom:24px;">거래 내역이 포트폴리오에 반영되었습니다.</p>
-        <button class="btn btn--active" onclick="switchTab('tab2')">포트폴리오 보기</button>
-        <button class="btn" style="margin-top:12px;" onclick="resetToStep1()">처음으로</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── 탭 2: 포트폴리오 현황 ── -->
-  <section class="tab-content active" id="tab2">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-      <h1 class="text-page-title">포트폴리오</h1>
-      <button class="refresh-btn" onclick="loadTab2()">
+    <!-- ── 탭 2: 포트폴리오 현황 ── -->
+    <section class="tab-content active" id="tab2">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h1 class="text-page-title">포트폴리오</h1>
+        <button class="refresh-btn" onclick="loadTab2()">
         <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
       </button>
-    </div>
+      </div>
 
-    <!-- 1. 원형 차트 2개 -->
-    <div class="chart-row section">
-      <div class="card">
-        <p class="text-card-title" style="margin-bottom:12px;">국가별 금액 비중</p>
-        <div class="chart-wrap">
-          <canvas id="chart-country-value"></canvas>
+      <!-- 1. 원형 차트 2개 -->
+      <div class="chart-row section">
+        <div class="card">
+          <p class="text-card-title" style="margin-bottom:12px;">국가별 금액 비중</p>
+          <div class="chart-wrap">
+            <canvas id="chart-country-value"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <p class="text-card-title" style="margin-bottom:12px;">국가별 종목 수 비중</p>
+          <div class="chart-wrap">
+            <canvas id="chart-country-count"></canvas>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <p class="text-card-title" style="margin-bottom:12px;">국가별 종목 수 비중</p>
-        <div class="chart-wrap">
-          <canvas id="chart-country-count"></canvas>
-        </div>
-      </div>
-    </div>
 
-    <!-- 2. 자산 요약 카드 -->
-    <div class="asset-summary section">
-      <div class="card">
-        <p class="text-secondary">총자산 (KRW)</p>
-        <p class="text-key-number" style="font-size:28px; margin-top:4px;" id="total-krw">—</p>
+      <!-- 2. 자산 요약 카드 -->
+      <div class="asset-summary section">
+        <div class="card">
+          <p class="text-secondary">총자산 (KRW)</p>
+          <p class="text-key-number" style="font-size:28px; margin-top:4px;" id="total-krw">—</p>
+        </div>
+        <div class="card">
+          <p class="text-secondary">수익률</p>
+          <p class="text-key-number" style="font-size:28px; margin-top:4px;" id="total-return">—</p>
+        </div>
+        <div class="card">
+          <p class="text-secondary">추정 손익 (KRW)</p>
+          <p class="text-key-number" style="font-size:28px; margin-top:4px;" id="total-pnl">—</p>
+        </div>
       </div>
-      <div class="card">
-        <p class="text-secondary">수익률</p>
-        <p class="text-key-number" style="font-size:28px; margin-top:4px;" id="total-return">—</p>
-      </div>
-      <div class="card">
-        <p class="text-secondary">추정 손익 (KRW)</p>
-        <p class="text-key-number" style="font-size:28px; margin-top:4px;" id="total-pnl">—</p>
-      </div>
-    </div>
 
-    <!-- 3. 글로벌 마켓 지표 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">글로벌 마켓</h2>
-      <div class="market-grid">
-        <div class="card market-item">
-          <p class="text-secondary">KOSPI</p>
-          <p class="market-val" id="m-kospi">—</p>
-          <p class="text-secondary" id="m-kospi-chg">—</p>
-        </div>
-        <div class="card market-item">
-          <p class="text-secondary">S&amp;P 500</p>
-          <p class="market-val" id="m-sp500">—</p>
-          <p class="text-secondary" id="m-sp500-chg">—</p>
-        </div>
-        <div class="card market-item">
-          <p class="text-secondary">NASDAQ</p>
-          <p class="market-val" id="m-nasdaq">—</p>
-          <p class="text-secondary" id="m-nasdaq-chg">—</p>
-        </div>
-        <div class="card market-item">
-          <p class="text-secondary">Nikkei</p>
-          <p class="market-val" id="m-nikkei">—</p>
-          <p class="text-secondary" id="m-nikkei-chg">—</p>
-        </div>
-        <div class="card market-item">
-          <p class="text-secondary">USD/KRW</p>
-          <p class="market-val" id="m-usd">—</p>
-          <p class="text-secondary" id="m-usd-chg">—</p>
-        </div>
-        <div class="card market-item">
-          <p class="text-secondary">JPY/KRW</p>
-          <p class="market-val" id="m-jpy">—</p>
-          <p class="text-secondary" id="m-jpy-chg">—</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. 보유 종목 테이블 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">보유 종목</h2>
-      <div class="card table-wrapper">
-        <table id="holdings-table">
-          <thead>
-            <tr>
-              <th>종목명</th>
-              <th>현재가</th>
-              <th>평단가</th>
-              <th>손익</th>
-              <th>수익률</th>
-              <th>비중</th>
-            </tr>
-          </thead>
-          <tbody id="holdings-body">
-            <tr><td colspan="6" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 불러오는 중…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 5. 자산 배분 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">자산 배분</h2>
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span class="text-secondary">위험 자산 <span id="alloc-risk-pct" style="color:var(--color-error); font-weight:600;">—</span></span>
-          <span class="text-secondary">안전 자산 <span id="alloc-safe-pct" style="color:var(--color-success); font-weight:600;">—</span></span>
-        </div>
-        <div class="alloc-bar-wrap">
-          <div class="alloc-bar-risk" id="alloc-bar-risk" style="width:0%"></div>
-          <div class="alloc-bar-safe" id="alloc-bar-safe" style="width:0%"></div>
+      <!-- 3. 글로벌 마켓 지표 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">글로벌 마켓</h2>
+        <div class="market-grid">
+          <div class="card market-item">
+            <p class="text-secondary">KOSPI</p>
+            <p class="market-val" id="m-kospi">—</p>
+            <p class="text-secondary" id="m-kospi-chg">—</p>
+          </div>
+          <div class="card market-item">
+            <p class="text-secondary">S&amp;P 500</p>
+            <p class="market-val" id="m-sp500">—</p>
+            <p class="text-secondary" id="m-sp500-chg">—</p>
+          </div>
+          <div class="card market-item">
+            <p class="text-secondary">NASDAQ</p>
+            <p class="market-val" id="m-nasdaq">—</p>
+            <p class="text-secondary" id="m-nasdaq-chg">—</p>
+          </div>
+          <div class="card market-item">
+            <p class="text-secondary">Nikkei</p>
+            <p class="market-val" id="m-nikkei">—</p>
+            <p class="text-secondary" id="m-nikkei-chg">—</p>
+          </div>
+          <div class="card market-item">
+            <p class="text-secondary">USD/KRW</p>
+            <p class="market-val" id="m-usd">—</p>
+            <p class="text-secondary" id="m-usd-chg">—</p>
+          </div>
+          <div class="card market-item">
+            <p class="text-secondary">JPY/KRW</p>
+            <p class="market-val" id="m-jpy">—</p>
+            <p class="text-secondary" id="m-jpy-chg">—</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 6. 리밸런싱 신호 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">리밸런싱 신호</h2>
-      <div class="rebalance-grid" id="rebalance-grid">
-        <div class="card signal-hold">
-          <p class="text-secondary" style="margin-bottom:4px;">데이터 없음</p>
-          <span class="badge badge--hold">유지</span>
+      <!-- 4. 보유 종목 테이블 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">보유 종목</h2>
+        <div class="card table-wrapper">
+          <table id="holdings-table">
+            <thead>
+              <tr>
+                <th>종목명</th>
+                <th>현재가</th>
+                <th>평단가</th>
+                <th>손익</th>
+                <th>수익률</th>
+                <th>비중</th>
+              </tr>
+            </thead>
+            <tbody id="holdings-body">
+              <tr>
+                <td colspan="6" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 불러오는 중…</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
 
-    <!-- 7. 퀀트 지표 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">퀀트 지표</h2>
-      <div class="quant-grid">
-        <div class="card quant-card">
-          <p class="text-secondary">Sharpe</p>
-          <p class="quant-val" id="q-sharpe">—</p>
-        </div>
-        <div class="card quant-card">
-          <p class="text-secondary">Sortino</p>
-          <p class="quant-val" id="q-sortino">—</p>
-        </div>
-        <div class="card quant-card">
-          <p class="text-secondary">MDD</p>
-          <p class="quant-val" id="q-mdd">—</p>
-        </div>
-        <div class="card quant-card">
-          <p class="text-secondary">VaR (95%)</p>
-          <p class="quant-val" id="q-var">—</p>
+      <!-- 5. 자산 배분 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">자산 배분</h2>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span class="text-secondary">위험 자산 <span id="alloc-risk-pct" style="color:var(--color-error); font-weight:600;">—</span></span>
+            <span class="text-secondary">안전 자산 <span id="alloc-safe-pct" style="color:var(--color-success); font-weight:600;">—</span></span>
+          </div>
+          <div class="alloc-bar-wrap">
+            <div class="alloc-bar-risk" id="alloc-bar-risk" style="width:0%"></div>
+            <div class="alloc-bar-safe" id="alloc-bar-safe" style="width:0%"></div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ── 탭 3: 거래 이력 ── -->
-  <section class="tab-content" id="tab3">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h1 class="text-page-title">거래 이력</h1>
-      <button class="refresh-btn" onclick="loadTab3()">
+      <!-- 6. 리밸런싱 신호 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">리밸런싱 신호</h2>
+        <div class="rebalance-grid" id="rebalance-grid">
+          <div class="card signal-hold">
+            <p class="text-secondary" style="margin-bottom:4px;">데이터 없음</p>
+            <span class="badge badge--hold">유지</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. 퀀트 지표 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">퀀트 지표</h2>
+        <div class="quant-grid">
+          <div class="card quant-card">
+            <p class="text-secondary">Sharpe</p>
+            <p class="quant-val" id="q-sharpe">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">Sortino</p>
+            <p class="quant-val" id="q-sortino">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">MDD</p>
+            <p class="quant-val" id="q-mdd">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">VaR (95%)</p>
+            <p class="quant-val" id="q-var">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 탭 3: 거래 이력 ── -->
+    <section class="tab-content" id="tab3">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 class="text-page-title">거래 이력</h1>
+        <button class="refresh-btn" onclick="loadTab3()">
         <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
       </button>
-    </div>
+      </div>
 
-    <!-- 필터 바 -->
-    <div class="filter-bar">
-      <input id="search-name" type="text" placeholder="종목명 검색" oninput="filterHistory()" />
-      <select id="filter-asset" onchange="filterHistory()">
+      <!-- 필터 바 -->
+      <div class="filter-bar">
+        <input id="search-name" type="text" placeholder="종목명 검색" oninput="filterHistory()" />
+        <select id="filter-asset" onchange="filterHistory()">
         <option value="">전체 자산군</option>
         <option>국내주식</option>
         <option>해외주식</option>
@@ -578,199 +852,220 @@
         <option>채권</option>
         <option>현금</option>
       </select>
-      <select id="filter-period" onchange="filterHistory()">
+        <select id="filter-period" onchange="filterHistory()">
         <option value="">전체 기간</option>
         <option value="1m">최근 1개월</option>
         <option value="3m">최근 3개월</option>
         <option value="6m">최근 6개월</option>
         <option value="1y">최근 1년</option>
       </select>
-      <button id="toggle-buy"  class="toggle-btn" onclick="toggleType('buy')">매수</button>
-      <button id="toggle-sell" class="toggle-btn" onclick="toggleType('sell')">매도</button>
-    </div>
-
-    <div class="card table-wrapper">
-      <table id="history-table">
-        <thead>
-          <tr>
-            <th>날짜</th>
-            <th>종목</th>
-            <th>자산군</th>
-            <th>수량</th>
-            <th>단가</th>
-            <th>총금액</th>
-            <th>구분</th>
-          </tr>
-        </thead>
-        <tbody id="history-body">
-          <tr><td colspan="7" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 불러오는 중…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ── 탭 4: AI 분석 ── -->
-  <section class="tab-content" id="tab4">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-      <h1 class="text-page-title">AI 분석</h1>
-      <button class="refresh-btn" onclick="loadTab4()">
-        <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
-      </button>
-    </div>
-
-    <!-- 퀀트 요약 (5개) -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">퀀트 요약</h2>
-      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:var(--card-gap);" id="quant5-grid">
-        <div class="card quant-card"><p class="text-secondary">Sharpe</p><p class="quant-val" id="a-sharpe">—</p></div>
-        <div class="card quant-card"><p class="text-secondary">Sortino</p><p class="quant-val" id="a-sortino">—</p></div>
-        <div class="card quant-card"><p class="text-secondary">MDD</p><p class="quant-val" id="a-mdd">—</p></div>
-        <div class="card quant-card"><p class="text-secondary">VaR</p><p class="quant-val" id="a-var">—</p></div>
-        <div class="card quant-card"><p class="text-secondary">종합 리스크</p><p class="quant-val" id="a-risk">—</p></div>
+        <button id="toggle-buy"  class="toggle-btn" onclick="toggleType('buy')">매수</button>
+        <button id="toggle-sell" class="toggle-btn" onclick="toggleType('sell')">매도</button>
       </div>
-    </div>
 
-    <!-- 퀀트 심화 테이블 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">퀀트 심화</h2>
       <div class="card table-wrapper">
-        <table id="quant-detail-table">
+        <table id="history-table">
           <thead>
             <tr>
-              <th>티커</th>
-              <th>연간변동성</th>
-              <th>위험기여도</th>
-              <th>Kelly 비중</th>
-              <th>현재 비중</th>
-              <th>비중 판단</th>
+              <th>날짜</th>
+              <th>종목</th>
+              <th>자산군</th>
+              <th>수량</th>
+              <th>단가</th>
+              <th>총금액</th>
+              <th>구분</th>
             </tr>
           </thead>
-          <tbody id="quant-detail-body">
-            <tr><td colspan="6" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 불러오는 중…</td></tr>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="7" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 불러오는 중…</td>
+            </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <!-- 행동경제학 경고 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">행동경제학 경고</h2>
-      <div class="behavior-cards">
-        <div class="card bcard-none" id="b-loss">
-          <p class="text-card-title" style="margin-bottom:8px;">손실회피 편향</p>
-          <span class="badge badge--hold" id="b-loss-badge">없음</span>
-          <p class="text-secondary" style="margin-top:8px;" id="b-loss-desc">분석 대기 중</p>
-        </div>
-        <div class="card bcard-none" id="b-dispose">
-          <p class="text-card-title" style="margin-bottom:8px;">처분 효과</p>
-          <span class="badge badge--hold" id="b-dispose-badge">없음</span>
-          <p class="text-secondary" style="margin-top:8px;" id="b-dispose-desc">분석 대기 중</p>
-        </div>
-        <div class="card bcard-none" id="b-confirm">
-          <p class="text-card-title" style="margin-bottom:8px;">확증 편향</p>
-          <span class="badge badge--hold" id="b-confirm-badge">없음</span>
-          <p class="text-secondary" style="margin-top:8px;" id="b-confirm-desc">분석 대기 중</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- AI 종합 분석 -->
-    <div class="section">
-      <h2 class="text-section-title" style="margin-bottom:16px;">AI 종합 분석</h2>
-      <div class="ai-cards">
-        <div class="card">
-          <p class="text-card-title" style="margin-bottom:8px;">리밸런싱 제안</p>
-          <p class="text-secondary" id="ai-rebalance">데이터 없음</p>
-        </div>
-        <div class="card">
-          <p class="text-card-title" style="margin-bottom:8px;">자동 경고</p>
-          <p class="text-secondary" id="ai-alert">데이터 없음</p>
-        </div>
-        <div class="card">
-          <p class="text-card-title" style="margin-bottom:8px;">거시경제 코멘트</p>
-          <p class="text-secondary" id="ai-macro">데이터 없음</p>
-          <p class="text-secondary" style="font-size:11px; margin-top:8px;" id="ai-timestamp">—</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── 탭 5: 오류 ── -->
-  <section class="tab-content" id="tab5">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-      <h1 class="text-page-title">오류 로그</h1>
-      <button class="refresh-btn" onclick="loadTab5()">
+    <!-- ── 탭 4: AI 분석 ── -->
+    <section class="tab-content" id="tab4">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h1 class="text-page-title">AI 분석</h1>
+        <button class="refresh-btn" onclick="loadTab4()">
         <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
       </button>
-    </div>
+      </div>
 
-    <div id="no-error-msg" class="no-error" style="display:none;">
-      <span class="material-icons">check_circle</span>
-      <p class="text-section-title" style="color:var(--color-success);">현재 기록된 오류가 없습니다</p>
-    </div>
+      <!-- 퀀트 요약 (5개) -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">퀀트 요약</h2>
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:var(--card-gap);" id="quant5-grid">
+          <div class="card quant-card">
+            <p class="text-secondary">Sharpe</p>
+            <p class="quant-val" id="a-sharpe">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">Sortino</p>
+            <p class="quant-val" id="a-sortino">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">MDD</p>
+            <p class="quant-val" id="a-mdd">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">VaR</p>
+            <p class="quant-val" id="a-var">—</p>
+          </div>
+          <div class="card quant-card">
+            <p class="text-secondary">종합 리스크</p>
+            <p class="quant-val" id="a-risk">—</p>
+          </div>
+        </div>
+      </div>
 
-    <div class="card table-wrapper" id="error-table-wrap">
-      <table id="error-table">
-        <thead>
-          <tr>
-            <th>발생 시각</th>
-            <th>위치</th>
-            <th>오류 내용</th>
-            <th>해결 상태</th>
-          </tr>
-        </thead>
-        <tbody id="error-body">
-          <tr><td colspan="4" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 없음</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+      <!-- 퀀트 심화 테이블 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">퀀트 심화</h2>
+        <div class="card table-wrapper">
+          <table id="quant-detail-table">
+            <thead>
+              <tr>
+                <th>티커</th>
+                <th>연간변동성</th>
+                <th>위험기여도</th>
+                <th>Kelly 비중</th>
+                <th>현재 비중</th>
+                <th>비중 판단</th>
+              </tr>
+            </thead>
+            <tbody id="quant-detail-body">
+              <tr>
+                <td colspan="6" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 불러오는 중…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-  <!-- ── 탭 6: 종목 트리맵 ── -->
-  <section class="tab-content" id="tab6">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-      <h1 class="text-page-title">종목 트리맵</h1>
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div id="treemap-account-tabs" style="display:flex; gap:8px;"></div>
-        <button class="refresh-btn" onclick="tab6Loaded=false; chartTreemap&&chartTreemap.destroy(); chartTreemap=null; allTreemapItems=null; loadTab6()">
+      <!-- 행동경제학 경고 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">행동경제학 경고</h2>
+        <div class="behavior-cards">
+          <div class="card bcard-none" id="b-loss">
+            <p class="text-card-title" style="margin-bottom:8px;">손실회피 편향</p>
+            <span class="badge badge--hold" id="b-loss-badge">없음</span>
+            <p class="text-secondary" style="margin-top:8px;" id="b-loss-desc">분석 대기 중</p>
+          </div>
+          <div class="card bcard-none" id="b-dispose">
+            <p class="text-card-title" style="margin-bottom:8px;">처분 효과</p>
+            <span class="badge badge--hold" id="b-dispose-badge">없음</span>
+            <p class="text-secondary" style="margin-top:8px;" id="b-dispose-desc">분석 대기 중</p>
+          </div>
+          <div class="card bcard-none" id="b-confirm">
+            <p class="text-card-title" style="margin-bottom:8px;">확증 편향</p>
+            <span class="badge badge--hold" id="b-confirm-badge">없음</span>
+            <p class="text-secondary" style="margin-top:8px;" id="b-confirm-desc">분석 대기 중</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 종합 분석 -->
+      <div class="section">
+        <h2 class="text-section-title" style="margin-bottom:16px;">AI 종합 분석</h2>
+        <div class="ai-cards">
+          <div class="card">
+            <p class="text-card-title" style="margin-bottom:8px;">리밸런싱 제안</p>
+            <p class="text-secondary" id="ai-rebalance">데이터 없음</p>
+          </div>
+          <div class="card">
+            <p class="text-card-title" style="margin-bottom:8px;">자동 경고</p>
+            <p class="text-secondary" id="ai-alert">데이터 없음</p>
+          </div>
+          <div class="card">
+            <p class="text-card-title" style="margin-bottom:8px;">거시경제 코멘트</p>
+            <p class="text-secondary" id="ai-macro">데이터 없음</p>
+            <p class="text-secondary" style="font-size:11px; margin-top:8px;" id="ai-timestamp">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 탭 5: 오류 ── -->
+    <section class="tab-content" id="tab5">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h1 class="text-page-title">오류 로그</h1>
+        <button class="refresh-btn" onclick="loadTab5()">
+        <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
+      </button>
+      </div>
+
+      <div id="no-error-msg" class="no-error" style="display:none;">
+        <span class="material-icons">check_circle</span>
+        <p class="text-section-title" style="color:var(--color-success);">현재 기록된 오류가 없습니다</p>
+      </div>
+
+      <div class="card table-wrapper" id="error-table-wrap">
+        <table id="error-table">
+          <thead>
+            <tr>
+              <th>발생 시각</th>
+              <th>위치</th>
+              <th>오류 내용</th>
+              <th>해결 상태</th>
+            </tr>
+          </thead>
+          <tbody id="error-body">
+            <tr>
+              <td colspan="4" style="text-align:center; color:var(--color-secondary); padding:32px;">데이터 없음</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 탭 6: 종목 트리맵 ── -->
+    <section class="tab-content" id="tab6">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h1 class="text-page-title">종목 트리맵</h1>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div id="treemap-account-tabs" style="display:flex; gap:8px;"></div>
+          <button class="refresh-btn" onclick="tab6Loaded=false; chartTreemap&&chartTreemap.destroy(); chartTreemap=null; allTreemapItems=null; loadTab6()">
           <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
         </button>
+        </div>
       </div>
-    </div>
-    <div id="tab6-empty">
-      <span class="material-icons">inventory_2</span>
-      <p>보유 종목이 없습니다</p>
-    </div>
-    <div class="card" style="padding:16px;">
-      <div class="treemap-wrap">
-        <canvas id="chart-treemap"></canvas>
+      <div id="tab6-empty">
+        <span class="material-icons">inventory_2</span>
+        <p>보유 종목이 없습니다</p>
       </div>
+      <div class="card" style="padding:16px;">
+        <div class="treemap-wrap">
+          <canvas id="chart-treemap"></canvas>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── 드로어 (탭 3 행 클릭) ── -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="row-drawer">
+    <div class="drawer-handle"></div>
+    <h3 class="text-card-title" style="margin-bottom:16px;">거래 상세</h3>
+    <div id="drawer-macro" style="margin-bottom:16px;">
+      <p class="text-secondary" style="font-size:13px; margin-bottom:4px;">거시경제 스냅샷</p>
+      <p id="drawer-macro-val" style="font-size:15px;">—</p>
     </div>
-  </section>
-
-</main>
-
-<!-- ── 드로어 (탭 3 행 클릭) ── -->
-<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
-<div class="drawer" id="row-drawer">
-  <div class="drawer-handle"></div>
-  <h3 class="text-card-title" style="margin-bottom:16px;">거래 상세</h3>
-  <div id="drawer-macro" style="margin-bottom:16px;">
-    <p class="text-secondary" style="font-size:13px; margin-bottom:4px;">거시경제 스냅샷</p>
-    <p id="drawer-macro-val" style="font-size:15px;">—</p>
+    <div>
+      <p class="text-secondary" style="font-size:13px; margin-bottom:4px;">투자일지 메모</p>
+      <p id="drawer-memo-val" style="font-size:15px; white-space:pre-wrap;">—</p>
+    </div>
   </div>
-  <div>
-    <p class="text-secondary" style="font-size:13px; margin-bottom:4px;">투자일지 메모</p>
-    <p id="drawer-memo-val" style="font-size:15px; white-space:pre-wrap;">—</p>
-  </div>
-</div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@3.1.0/dist/chartjs-chart-treemap.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@3.1.0/dist/chartjs-chart-treemap.min.js"></script>
 
-<script>
-  // config.js - City Making 설정 파일
+  <script>
+    // config.js - City Making 설정 파일
   const CONFIG = {
   // 비밀번호 (숫자로 설정)
   PASSWORD: '1234',
@@ -791,9 +1086,9 @@
   // 세션 키
   SESSION_KEY: 'cm_auth',
 };
-</script>
-<script>
-const CORRECT_PW = CONFIG.PASSWORD;
+  </script>
+  <script>
+    const CORRECT_PW = CONFIG.PASSWORD;
 
 const API = {
   async get(endpoint) {
@@ -1195,25 +1490,29 @@ function renderTreemap(account) {
         data: items,
         key: 'value',
         labels: {
-          display: true,
-          color: '#fff',
-          font: { size: 11, weight: '600' },
-          formatter(ctx) {
-            const d = ctx.raw._data;
-            if (d) {
-              const sign = d.returnRate > 0 ? '+' : '';
-              return [d.name, `${sign}${d.returnRate}%`];
-            }
-            return ctx.raw.g || '';
-          }
-        },
+  display: true,
+  color: '#fff',
+  font(ctx) {
+    const w = ctx.raw ? ctx.raw.w : 0;
+    const h = ctx.raw ? ctx.raw.h : 0;
+    const size = Math.max(10, Math.min(w, h) / 6);
+    return { size: size, weight: '700' };
+  },
+  formatter(ctx) {
+    const d = ctx.raw._data;
+    if (!d) return ctx.raw.g || '';
+    const ret = d.returnRate;
+    const sign = ret > 0 ? '+' : '';
+    return [d.name, `${sign}${ret}%`];
+  }
+},
         backgroundColor(ctx) {
           if (!ctx.raw) return 'transparent';
           const d = ctx.raw._data;
           if (!d) return 'rgba(60,60,67,0.18)';
           const ret = d.returnRate || 0;
-          if (ret > 0) return 'rgba(0,113,227,0.80)';
-          if (ret < 0) return 'rgba(255,59,48,0.80)';
+          if (ret > 0) return 'rgba(43, 255, 0, 0.62)';
+          if (ret < 0) return 'rgba(255, 13, 0, 0.8)';
           return 'rgba(142,142,147,0.80)';
         },
         borderColor: 'rgba(255,255,255,0.25)',
@@ -1239,6 +1538,7 @@ function renderTreemap(account) {
     }
   });
 }
-</script>
+  </script>
 </body>
+
 </html>
