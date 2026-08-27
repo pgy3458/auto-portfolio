@@ -501,7 +501,7 @@ function getHoldingsTreemap() {
     if (!ticker || !account || value <= 0) continue;
 
     // 손익률: 퍼센트 서식 셀(0.1417)과 문자열("14.17%") 둘 다 대응
-    var ret = (Number)retRaw * 100;
+    var ret = Number(retRaw) * 100;
 
     items.push({
       account:     account,
