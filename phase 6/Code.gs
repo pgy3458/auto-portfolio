@@ -3,7 +3,7 @@
 // 역할: Frontend(index.html) ↔ Google Sheets 중간 레이어
 // ============================================================
 
-const SPREADSHEET_ID  = '1NAWrJnOMiPcuZOZN_k7OkyFxTA81jw8f0pAJkKUlfDE';
+const SPREADSHEET_ID  = '1NAWrJnOMiPcuZOZN_k7OkyFxTA81jw8f0pAJkKUlfDE'; //
 const SHEET_RAW       = 'RAW_DATA';
 const SHEET_DASHBOARD = 'PORTFOLIO';
 const SHEET_AI        = 'AI_ANALYSIS';
@@ -479,61 +479,41 @@ function buildMacroString(kospi, nasdaq, nikkei, usdkrw) {
   return parts.join(' · ');
 }
 
-// ── GET: getHoldingsTreemap ────────────────────────────────
-// 응답: { success, items: [{account, name, ticker, value, returnRate}] }
+const SHEET_TREEMAP = '트리맵데이터';
+
 function getHoldingsTreemap() {
-  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName(SHEET_RAW);
-  if (!sheet) return { success: false, error: 'Sheet not found' };
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_TREEMAP);
+  if (!sheet) return { success: false, error: 'Sheet "' + SHEET_TREEMAP + '" not found' };
 
   var rows = sheet.getDataRange().getValues();
   if (rows.length <= 1) return { success: true, items: [] };
 
-  var holdingsMap = {};
+  var items = [];
   for (var i = 1; i < rows.length; i++) {
-    var r      = rows[i];
-    var name   = r[1], ticker = r[2];
-    var market = r[3] || guessCountry(r[2]);
-    var type   = normalizeType(r[5]);
-    var qty    = Number(r[6]) || 0;
-    var price  = Number(r[7]) || 0;
-    if (!ticker) continue;
-    if (!holdingsMap[ticker]) {
-      holdingsMap[ticker] = { name: name, ticker: ticker, market: market, qty: 0, cost: 0 };
-    }
-    if (type === '매수') {
-      holdingsMap[ticker].qty  += qty;
-      holdingsMap[ticker].cost += qty * price;
-    } else if (type === '매도') {
-      var avg = holdingsMap[ticker].qty > 0 ? holdingsMap[ticker].cost / holdingsMap[ticker].qty : 0;
-      holdingsMap[ticker].qty  -= qty;
-      holdingsMap[ticker].cost -= qty * avg;
-      if (holdingsMap[ticker].qty <= 0) { holdingsMap[ticker].qty = 0; holdingsMap[ticker].cost = 0; }
-    }
+    var r = rows[i];
+    var ticker  = r[0];
+    var account = r[1];
+    var value   = Number(r[2]) || 0;
+    var retRaw  = r[5];
+    var curPrice = Number(r[4]) || 0;
+
+    if (!ticker || !account || value <= 0) continue;
+
+    // 손익률: 퍼센트 서식 셀(0.1417)과 문자열("14.17%") 둘 다 대응
+    var ret = (Number)retRaw * 100;
+
+    items.push({
+      account:     account,
+      name:        ticker,
+      ticker:      ticker,
+      value:       Math.round(value),
+      returnRate:  Math.round(ret * 100) / 100,
+      currentPrice: curPrice,   // 현재가 — 향후 tooltip 확장용으로 포함
+    });
   }
 
-  var items = Object.values(holdingsMap)
-    .filter(function(h) { return h.qty > 0 && h.cost > 0; })
-    .map(function(h) {
-      return {
-        account:    marketToAccount(h.market),
-        name:       h.name,
-        ticker:     h.ticker,
-        value:      Math.round(h.cost),
-        returnRate: 0,   // 실시간 시세 미수집 → 임시값
-      };
-    });
-
   return { success: true, items: items };
-}
-
-function marketToAccount(market) {
-  if (!market) return '기타';
-  var m = String(market).toUpperCase();
-  if (m === 'US' || m === '미국') return '미국주식';
-  if (m === 'KR' || m === '한국' || m === '국내') return '국내주식';
-  if (m === 'JP' || m === '일본') return '일본주식';
-  return market;
 }
 
 function guessCountry(ticker) {
