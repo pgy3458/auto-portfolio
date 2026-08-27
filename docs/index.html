@@ -1199,12 +1199,12 @@ function renderTreemap(account) {
           color: '#fff',
           font: { size: 11, weight: '600' },
           formatter(ctx) {
+            const d = ctx.raw._data;
             if (d) {
               const sign = d.returnRate > 0 ? '+' : '';
               return [d.name, `${sign}${d.returnRate}%`];
             }
             return ctx.raw.g || '';
-          }
           }
         },
         backgroundColor(ctx) {
