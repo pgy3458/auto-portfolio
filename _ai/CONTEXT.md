@@ -63,6 +63,9 @@ Code.gs parseNLP(): return parsed → return { success:true, parsed } — 프론
 ## 2026-08-26 완료
 tab6 종목 트리맵 신설: chartjs-chart-treemap@3.1.0 CDN, 계좌→종목 2단계 구조, size=cost, color=손익률. Code.gs getHoldingsTreemap() + marketToAccount() 추가, switchTab/TABS 확장, tab6Loaded 1회 로드 가드 적용.
 
+## 2026-08-27 완료
+tab6 계좌 선택 탭 버튼 추가: allTreemapItems 전역 저장 → 고유 account 추출 → treemap-account-tabs 동적 렌더링. renderTreemap(account)로 분리, groups 옵션 제거(name/returnRate undefined 버그 방지). 새로고침 시 allTreemapItems=null 초기화 포함.
+
 ## 2026-04-14 완료
 go/index_2.html: Tab2 getPortfolio()에서 삭제된 #q-sharpe/sortino/mdd/var DOM 참조 4줄 제거 → TypeError: null is not an object 오류 해소.
 

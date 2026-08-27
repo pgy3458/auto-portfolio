@@ -730,9 +730,12 @@
   <section class="tab-content" id="tab6">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
       <h1 class="text-page-title">종목 트리맵</h1>
-      <button class="refresh-btn" onclick="tab6Loaded=false; chartTreemap&&chartTreemap.destroy(); chartTreemap=null; loadTab6()">
-        <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
-      </button>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div id="treemap-account-tabs" style="display:flex; gap:8px;"></div>
+        <button class="refresh-btn" onclick="tab6Loaded=false; chartTreemap&&chartTreemap.destroy(); chartTreemap=null; allTreemapItems=null; loadTab6()">
+          <span class="material-icons" style="font-size:16px;">refresh</span>새로고침
+        </button>
+      </div>
     </div>
     <div id="tab6-empty">
       <span class="material-icons">inventory_2</span>
@@ -1141,6 +1144,7 @@ loadTab5();
 
 let tab6Loaded = false;
 let chartTreemap = null;
+let allTreemapItems = null;
 
 async function loadTab6() {
   if (tab6Loaded) return;
@@ -1149,68 +1153,88 @@ async function loadTab6() {
   const cardEl  = document.querySelector('#tab6 .card');
   try {
     const d = await API.get('getHoldingsTreemap');
-    const items = d.items || [];
-    if (!items.length) {
+    allTreemapItems = d.items || [];
+    if (!allTreemapItems.length) {
       emptyEl.style.display = '';
       cardEl.style.display  = 'none';
       return;
     }
     emptyEl.style.display = 'none';
     cardEl.style.display  = '';
-    if (chartTreemap) { chartTreemap.destroy(); chartTreemap = null; }
-    chartTreemap = new Chart(document.getElementById('chart-treemap'), {
-      type: 'treemap',
-      data: {
-        datasets: [{
-          label: '보유 종목',
-          data: items,
-          key: 'value',
-          groups: ['account'],
-          labels: {
-            display: true,
-            color: '#fff',
-            font: { size: 11, weight: '600' },
-            formatter(ctx) {
-              const d = ctx.raw._data;
-              if (d) return [d.name, d.ticker];
-              return ctx.raw.g || '';
-            }
-          },
-          backgroundColor(ctx) {
-            if (!ctx.raw) return 'transparent';
-            const d = ctx.raw._data;
-            if (!d) return 'rgba(60,60,67,0.18)';
-            const ret = d.returnRate || 0;
-            if (ret > 0) return 'rgba(0,113,227,0.80)';
-            if (ret < 0) return 'rgba(255,59,48,0.80)';
-            return 'rgba(142,142,147,0.80)';
-          },
-          borderColor: 'rgba(255,255,255,0.25)',
-          borderWidth: 1,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label(ctx) {
-                const d = ctx.raw._data;
-                if (!d) return ctx.raw.g || '';
-                const sign = d.returnRate > 0 ? '+' : '';
-                return `${d.name} | ${d.value.toLocaleString('ko-KR')}원 | ${sign}${d.returnRate}%`;
-              }
-            }
-          }
-        }
-      }
+
+    const accounts = [...new Set(allTreemapItems.map(it => it.account))];
+    const tabsEl = document.getElementById('treemap-account-tabs');
+    tabsEl.innerHTML = '';
+    accounts.forEach((acc, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'toggle-btn' + (i === 0 ? ' active-buy' : '');
+      btn.textContent = acc;
+      btn.onclick = () => {
+        tabsEl.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-buy'));
+        btn.classList.add('active-buy');
+        renderTreemap(acc);
+      };
+      tabsEl.appendChild(btn);
     });
+
+    renderTreemap(accounts[0]);
   } catch (e) {
     tab6Loaded = false;
     addError('탭6 > 트리맵', e.message, 'api');
   }
+}
+
+function renderTreemap(account) {
+  const items = allTreemapItems.filter(it => it.account === account);
+  if (chartTreemap) { chartTreemap.destroy(); chartTreemap = null; }
+  chartTreemap = new Chart(document.getElementById('chart-treemap'), {
+    type: 'treemap',
+    data: {
+      datasets: [{
+        label: '보유 종목',
+        data: items,
+        key: 'value',
+        labels: {
+          display: true,
+          color: '#fff',
+          font: { size: 11, weight: '600' },
+          formatter(ctx) {
+            const d = ctx.raw._data;
+            if (d) return [d.name, d.ticker];
+            return ctx.raw.g || '';
+          }
+        },
+        backgroundColor(ctx) {
+          if (!ctx.raw) return 'transparent';
+          const d = ctx.raw._data;
+          if (!d) return 'rgba(60,60,67,0.18)';
+          const ret = d.returnRate || 0;
+          if (ret > 0) return 'rgba(0,113,227,0.80)';
+          if (ret < 0) return 'rgba(255,59,48,0.80)';
+          return 'rgba(142,142,147,0.80)';
+        },
+        borderColor: 'rgba(255,255,255,0.25)',
+        borderWidth: 1,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label(ctx) {
+              const d = ctx.raw._data;
+              if (!d) return ctx.raw.g || '';
+              const sign = d.returnRate > 0 ? '+' : '';
+              return `${d.name} | ${d.value.toLocaleString('ko-KR')}원 | ${sign}${d.returnRate}%`;
+            }
+          }
+        }
+      }
+    }
+  });
 }
 </script>
 </body>
