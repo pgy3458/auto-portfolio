@@ -1507,14 +1507,19 @@ function renderTreemap(account) {
   }
 },
         backgroundColor(ctx) {
-          if (!ctx.raw) return 'transparent';
-          const d = ctx.raw._data;
-          if (!d) return 'rgba(60,60,67,0.18)';
-          const ret = d.returnRate || 0;
-          if (ret > 0) return 'rgba(43, 255, 0, 0.62)';
-          if (ret < 0) return 'rgba(255, 13, 0, 0.8)';
-          return 'rgba(142,142,147,0.80)';
-        },
+  if (!ctx.raw) return 'transparent';
+  const d = ctx.raw._data;
+  if (!d) return 'rgba(60,60,67,0.18)';
+  const ret = d.  returnRate || 0;
+
+  // 수익률 크기(절댓값)를 0~1 사이로 정규화 (±10%를 최대 진하기 기준으로)
+  const intensity = Math.min(Math.abs(ret) / 10, 1);
+  const alpha = 0.35 + intensity * 0.55;   // 최소 0.35 ~ 최대 0.90 진하기
+
+  if (ret > 0) return `rgba(19,163,72,${alpha})`;    // 초록 (진할수록 고수익)
+  if (ret < 0) return `rgba(214,45,32,${alpha})`;     // 빨강 (진할수록 큰 손실)
+  return 'rgba(142,142,147,0.60)';                    // 보합
+},
         borderColor: 'rgba(255,255,255,0.25)',
         borderWidth: 1,
       }]
@@ -1527,7 +1532,7 @@ function renderTreemap(account) {
         tooltip: {
           callbacks: {
             label(ctx) {
-              const d = ctx.raw._data;
+              const d = ctx.raw._data;  
               if (!d) return ctx.raw.g || '';
               const sign = d.returnRate > 0 ? '+' : '';
               return `${d.name} | ${d.value.toLocaleString('ko-KR')}원 | ${sign}${d.returnRate}%`;
